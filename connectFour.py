@@ -10,7 +10,7 @@ class ConnectFour:
         print('[NEW GAME] Starting new connect 4 game')
         self.game_state = np.zeros((6,7))
         # Initialise all available positions for pieces to land on at start of game
-        self.available_actions = [(6, 0), (6, 1), (6, 2), (6, 3), (6, 4), (6, 5), (6, 6)]
+        self.available_actions = [(5, 0), (5, 1), (5, 2), (5, 3), (5, 4), (5, 5), (5, 6)]
         # Tokens we will use to differentiate players
         self.player_1_token = 1
         self.player_2_token = 2
@@ -49,9 +49,14 @@ class ConnectFour:
                 selection = int(selection)
                 if selection not in available_columns:
                     raise Exception('Invalid column selected')
-                return selection
+                # Select the correct action from the remaining list
+                index = 0
+                for action in self.available_actions:
+                    if action[1] == selection:
+                        return index
+                    index += 1
             except Exception as e:
-                print('[ERROR] An error has occurred: ' + e)
+                print('[ERROR] An error has occurred: ' + str(e))
                 print('[ERROR] Please input a valid column')
 
     # Update the game with the newly added token for the player, and update new available actions
@@ -60,8 +65,9 @@ class ConnectFour:
         if self.player_turn == 2:
             player_token = self.player_2_token
         token_coordinate = self.available_actions[player_selection]
-        x = token_coordinate[1]
+        print(token_coordinate)
         y = token_coordinate[0]
+        x = token_coordinate[1]
         # Set the board as the player's token
         self.game_state[y][x] = player_token
         self.update_available_actions(player_selection)
@@ -70,10 +76,11 @@ class ConnectFour:
     def update_available_actions(self, player_selection):
         token_coordinate = self.available_actions[player_selection]
         if token_coordinate[0] == 0:
-            # Remove coordinate as at top of board
+            # Remove coordinate as at top of board - Stop here as no more actions
             del self.available_actions[player_selection]
             return
-        token_coordinate[0] = token_coordinate[0] - 1
+        new_action = (token_coordinate[0] - 1, token_coordinate[1])
+        self.available_actions[player_selection] = new_action
         return
 
     # Returns all available places that a piece can go in current state
