@@ -35,7 +35,14 @@ class ConnectFour:
                 self.player_turn = 2
             else:
                 self.player_turn = 1
+            print('[Available Actions]')
+            print(self.get_available_actions())
         return
+
+    # Checks if the game is over
+    def check_if_game_done(self):
+        self.is_done = False
+        return False
 
     # Get from player which column to add token to
     def get_player_selection(self):
@@ -70,6 +77,9 @@ class ConnectFour:
         x = token_coordinate[1]
         # Set the board as the player's token
         self.game_state[y][x] = player_token
+        # Game is over, player has won
+        if self.check_if_game_done():
+            return
         self.update_available_actions(player_selection)
 
     # Update the new coordinate according to where the piece was placed
