@@ -1,3 +1,4 @@
+from re import L
 import numpy as np
 
 '''
@@ -10,10 +11,7 @@ class ConnectFour:
         print('[NEW GAME] Starting new connect 4 game')
         self.game_state = np.zeros((6,7))
         # Initialise all available positions for pieces to land on at start of game
-        self.available_actions = [(5, 0), (5, 1), (5, 2), (5, 3), (5, 4), (5, 5), (5, 6)]
-        # Tokens we will use to differentiate players
-        self.player_1_token = 1
-        self.player_2_token = 2
+        self.available_actions = [5, 5, 5, 5, 5, 5, 5]
         # Start with turn for player 1
         self.player_turn = 1
         self.is_done = False
@@ -21,15 +19,17 @@ class ConnectFour:
         self.start_game()
 
     def start_game(self):
-        while not self.is_done:
+        while True:
             print(f'[TURN {str(self.turn_count)}] Player {str(self.player_turn)}\'s turn:')
-            print('======= GAME STATE =======')
-            print(self.game_state)
-            print('==========================')
-
+            print()
+            self.print_board()
+            # Get player action
             player_selection = self.get_player_selection()
             self.update_game_state(player_selection)
-
+            # Game has terminated
+            if self.is_done:
+                print(f'[GAME OVER] Player {str(self.player_turn)} won!')
+                return
             self.turn_count += 1
             if self.player_turn == 1:
                 self.player_turn = 2
@@ -37,60 +37,118 @@ class ConnectFour:
                 self.player_turn = 1
             print('[Available Actions]')
             print(self.get_available_actions())
-        return
 
-    # Checks if the game is over
-    def check_if_game_done(self):
-        self.is_done = False
+    def print_board(self):
+        if self.is_done:
+            print('------- GAME OVER ------')
+        else:
+            print('------ GAME STATE ------')
+        print(self.game_state)
+        print('========= ROW ==========')
+        print('  0  1  2  3  4  5  6   ')
+        print('------------------------')
+
+    # Checks to the left and right of last placed piece to determine if 4 in a row has been achieved
+    def calculate_horizontal_length(self, selected_column):
+        left_count = 0
+        right_count = 0
+        row = self.available_actions[selected_column]
+        player_token = self.player_turn
+        # Calculate number of pieces to left
+        if selected_column != 0:
+            curr_column = selected_column - 1
+            while curr_column >= 0:
+                if self.game_state[row][curr_column] == player_token:
+                    left_count += 1
+                else:
+                    break
+                curr_column -= 1
+        # Calculate number of pieces to right
+        if selected_column != 6:
+            curr_column = selected_column + 1
+            while curr_column <= 6:
+                if self.game_state[row][curr_column] == player_token:
+                    right_count += 1
+                else:
+                    break
+                curr_column += 1
+        return 1 + left_count + right_count
+    
+    # Checks to the top and bottom of last placed piece to determine if 4 in a row has been achieved
+    def calculate_vertical_length(self, selected_column):
+        up_count = 0
+        down_count = 0
+        row = self.available_actions[selected_column]
+        player_token = self.player_turn
+        # Calculate number of pieces to bottom
+        if row != 5:
+            curr_row = row + 1
+            while curr_row <= 5:
+                if self.game_state[curr_row][selected_column] == player_token:
+                    down_count += 1
+                else:
+                    break
+                curr_row += 1
+        # Calculate number of pieces to top
+        if row != 0:
+            curr_row = row - 1
+            while curr_row >= 0:
+                if self.game_state[curr_row][selected_column] == player_token:
+                    up_count += 1
+                else:
+                    break
+                curr_row -= 1
+        return 1 + down_count + up_count
+
+    '''
+    Check if the game has ended
+
+    We will only need to check 8 directions from when the last piece was placed for the player
+    '''
+    def check_if_game_done(self, selected_column):
+        # Check horizontals
+        if self.calculate_horizontal_length(selected_column) == 4:
+            self.is_done = True
+            self.print_board()
+            print(f'[GAME TERMINATION ENGINE] Player {str(self.player_turn)} won by HORIZONTAL')
+            return True
+        # Check verticals
+        if self.calculate_vertical_length(selected_column) == 4:
+            self.is_done = True
+            self.print_board()
+            print(f'[GAME TERMINATION ENGINE] Player {str(self.player_turn)} won by VERTICAL')
+            return True
+        # Check diagonals
         return False
 
     # Get from player which column to add token to
     def get_player_selection(self):
         while True:
             try:
-                available_columns = []
-                for action in self.available_actions:
-                    available_columns.append(action[1])
-                print(f'Available columns: {str(available_columns)}')
-                selection = input('Select column --> ')
+                print(f'Available columns: {str(self.available_actions)}')
+                selection = input('Select column [0-6] which is not -1: ')
                 selection = int(selection)
-                if selection not in available_columns:
+                if self.available_actions[selection] == -1:
                     raise Exception('Invalid column selected')
-                # Select the correct action from the remaining list
-                index = 0
-                for action in self.available_actions:
-                    if action[1] == selection:
-                        return index
-                    index += 1
+                return selection
             except Exception as e:
                 print('[ERROR] An error has occurred: ' + str(e))
                 print('[ERROR] Please input a valid column')
 
     # Update the game with the newly added token for the player, and update new available actions
-    def update_game_state(self, player_selection):
-        player_token = self.player_1_token
-        if self.player_turn == 2:
-            player_token = self.player_2_token
-        token_coordinate = self.available_actions[player_selection]
-        print(token_coordinate)
-        y = token_coordinate[0]
-        x = token_coordinate[1]
+    def update_game_state(self, selected_column):
+        y = self.available_actions[selected_column]
+        x = selected_column
         # Set the board as the player's token
-        self.game_state[y][x] = player_token
-        # Game is over, player has won
-        if self.check_if_game_done():
+        self.game_state[y][x] = self.player_turn
+        if self.check_if_game_done(selected_column):
             return
-        self.update_available_actions(player_selection)
+        self.update_available_actions(selected_column)
 
     # Update the new coordinate according to where the piece was placed
-    def update_available_actions(self, player_selection):
-        token_coordinate = self.available_actions[player_selection]
-        if token_coordinate[0] == 0:
-            # Remove coordinate as at top of board - Stop here as no more actions
-            del self.available_actions[player_selection]
-            return
-        new_action = (token_coordinate[0] - 1, token_coordinate[1])
-        self.available_actions[player_selection] = new_action
+    def update_available_actions(self, selected_column):
+        column_height = self.available_actions[selected_column]
+        self.available_actions[selected_column] = column_height - 1
         return
 
     # Returns all available places that a piece can go in current state
