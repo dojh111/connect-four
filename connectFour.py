@@ -1,3 +1,4 @@
+from os import system, name
 import numpy as np
 
 '''
@@ -18,39 +19,108 @@ class ConnectFour:
         self.turn_count = 1
         self.agent_player_number = agent_player_number  # Determines if agent will be player 1 or 2
         self.agent_game_outcome = 0    # Outcome for agent - 0 = Draw, -1 = Lose, 1 = Win 
-        self.start_game()
+        # self.start_game()     # Uncomment to start game for human player - For testing and debugging purposes
 
+    # Clears the terminal screen to reduce clutter
+    def clear(self):
+        # for windows
+        if name == 'nt':
+            _ = system('cls')
+        # for mac and linux(here, os.name is 'posix')
+        else:
+            _ = system('clear')
+
+    '''
+    Main function for AI agents to play game
+
+    Returns True if action is valid, False if chosen action is not valid
+    '''
+    def play_turn(self, selected_column):
+        # Check if selected column is invalid
+        if self.available_actions[selected_column] == -1:
+            print('[INVALID ACTION] Invalid action selected, please try again')
+            return False
+        is_terminated = self.update_game_state(selected_column)
+        # Game has terminated
+        if is_terminated:
+            if self.agent_player_number == self.player_turn:
+                print(f'[GAME OVER] Player {str(self.player_turn)}, AGENT has won!')
+                self.agent_game_outcome = 1     # Agent has won the game
+                return self.agent_game_outcome
+            else:
+                print(f'[GAME OVER] Player {str(self.player_turn)}, AI has won!')
+                self.agent_game_outcome = -1    # Agent has lost the game
+                return self.agent_game_outcome
+        # Game continues
+        self.turn_count += 1
+        if self.turn_count == 42:   # Board has been filled
+            self.is_draw = True
+            self.is_done = True
+            print(f'[GAME OVER] Draw! - No more turns remaining')
+            return self.agent_game_outcome
+        # Set player turn
+        if self.player_turn == 1:
+            self.player_turn = 2
+        else:
+            self.player_turn = 1
+        return True
+
+    '''
+    Starts the main game loop - For testing purposes
+    '''
     def start_game(self):
         while True:
-            print()
-            if self.player_turn == self.agent_player_number:
-                print(f'[TURN {str(self.turn_count)} - AGENT] Player {str(self.player_turn)}\'s turn:')
-            else:
-                print(f'[TURN {str(self.turn_count)} - AI] Player {str(self.player_turn)}\'s turn:')
+            self.clear()
+            # Main game loop
+            player_selection = -1
             self.print_board()
-            # Get player action
-            player_selection = self.get_player_selection()
-            self.update_game_state(player_selection)
+            if self.player_turn == self.agent_player_number:    # Action selection for our AI agent
+                print(f'[TURN {str(self.turn_count)} - AGENT] Player {str(self.player_turn)}\'s turn:')
+                player_selection = self.get_player_selection()
+            else:                                               # Actions selection for the opponent player
+                print(f'[TURN {str(self.turn_count)} - AI] Player {str(self.player_turn)}\'s turn:')
+                player_selection = self.get_player_selection()
+            is_terminated = self.update_game_state(player_selection)
             # Game has terminated
-            if self.is_done:
+            if is_terminated:
                 if self.agent_player_number == self.player_turn:
                     print(f'[GAME OVER] Player {str(self.player_turn)}, AGENT has won!')
                     self.agent_game_outcome = 1     # Agent has won the game
+                    return self.agent_game_outcome
                 else:
                     print(f'[GAME OVER] Player {str(self.player_turn)}, AI has won!')
                     self.agent_game_outcome = -1    # Agent has lost the game
-                return
-            elif self.is_draw:
-                print(f'[GAME OVER] Draw! - No more turns remaining')
-                self.agent_game_outcome = 0
-                return
+                    return self.agent_game_outcome
             # Game continues
             self.turn_count += 1
+            if self.turn_count == 42:   # Board has been filled
+                self.is_draw = True
+                self.is_done = True
+                print(f'[GAME OVER] Draw! - No more turns remaining')
+                return self.agent_game_outcome
+            # Set player turn
             if self.player_turn == 1:
                 self.player_turn = 2
             else:
                 self.player_turn = 1
+    
+    '''
+    Prompts a human player for a input to put valid column to put their tile
+    '''
+    def get_player_selection(self):
+        while True:
+            try:
+                print(f'Available Actions: {str(self.available_actions)}')
+                selection = input('Select column [0-6]: ')
+                selection = int(selection)
+                if self.available_actions[selection] == -1:
+                    raise Exception('Invalid column selected')
+                return selection
+            except Exception as e:
+                print('[ERROR] An error has occurred: ' + str(e))
+                print('[ERROR] Please input a valid column')
 
+    # Prints out the current board
     def print_board(self):
         if self.is_done:
             print('------- GAME OVER ------')
@@ -220,32 +290,6 @@ class ConnectFour:
             return True
         return False
 
-    # Get from player which column to add token to
-    def get_player_selection(self):
-        while True:
-            try:
-                print(f'Available Actions: {str(self.available_actions)}')
-                selection = input('Select column [0-6] which is not -1: ')
-                selection = int(selection)
-                if self.available_actions[selection] == -1:
-                    raise Exception('Invalid column selected')
-                return selection
-            except Exception as e:
-                print('[ERROR] An error has occurred: ' + str(e))
-                print('[ERROR] Please input a valid column')
-
-    # Checks if the game is a draw
-    def check_for_draw(self):
-        # Check if all actions are -1
-        for action in self.available_actions:
-            if action >= 0:
-                return
-        # Draw has happened
-        self.is_draw = True
-        self.print_board()
-        return
-
-
     # Update the game with the newly added token for the player, and update new available actions
     def update_game_state(self, selected_column):
         y = self.available_actions[selected_column]
@@ -253,10 +297,9 @@ class ConnectFour:
         # Set the board as the player's token
         self.game_state[y][x] = self.player_turn
         if self.check_if_game_done(selected_column):
-            return
+            return True
         self.update_available_actions(selected_column)
-        self.check_for_draw()
-        return
+        return False
 
     # Update the new coordinate according to where the piece was placed
     def update_available_actions(self, selected_column):
@@ -271,5 +314,5 @@ class ConnectFour:
     def get_state(self):
         return self.game_state
 
-if __name__ == '__main__':
-    connect_four = ConnectFour(2)
+    def get_turn_number(self):
+        return self.turn_count
