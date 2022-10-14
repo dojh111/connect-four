@@ -1,4 +1,3 @@
-from re import L
 import numpy as np
 
 '''
@@ -7,7 +6,7 @@ Pieces for each player is defined by the integers: 1 for player 1 and 2 for play
 '''
 class ConnectFour:
     # Constructor
-    def __init__(self):
+    def __init__(self, agent_player_number):
         print('[NEW GAME] Starting new connect 4 game')
         self.game_state = np.zeros((6,7))
         # Initialise all available positions for pieces to land on at start of game
@@ -17,30 +16,40 @@ class ConnectFour:
         self.is_done = False
         self.is_draw = False
         self.turn_count = 1
+        self.agent_player_number = agent_player_number  # Determines if agent will be player 1 or 2
+        self.agent_game_outcome = 0    # Outcome for agent - 0 = Draw, -1 = Lose, 1 = Win 
         self.start_game()
 
     def start_game(self):
         while True:
             print()
-            print(f'[TURN {str(self.turn_count)}] Player {str(self.player_turn)}\'s turn:')
+            if self.player_turn == self.agent_player_number:
+                print(f'[TURN {str(self.turn_count)} - AGENT] Player {str(self.player_turn)}\'s turn:')
+            else:
+                print(f'[TURN {str(self.turn_count)} - AI] Player {str(self.player_turn)}\'s turn:')
             self.print_board()
             # Get player action
             player_selection = self.get_player_selection()
             self.update_game_state(player_selection)
             # Game has terminated
             if self.is_done:
-                print(f'[GAME OVER] Player {str(self.player_turn)} won!')
+                if self.agent_player_number == self.player_turn:
+                    print(f'[GAME OVER] Player {str(self.player_turn)}, AGENT has won!')
+                    self.agent_game_outcome = 1     # Agent has won the game
+                else:
+                    print(f'[GAME OVER] Player {str(self.player_turn)}, AI has won!')
+                    self.agent_game_outcome = -1    # Agent has lost the game
                 return
             elif self.is_draw:
                 print(f'[GAME OVER] Draw! - No more turns remaining')
+                self.agent_game_outcome = 0
                 return
+            # Game continues
             self.turn_count += 1
             if self.player_turn == 1:
                 self.player_turn = 2
             else:
                 self.player_turn = 1
-            print('[Available Actions]')
-            print(self.get_available_actions())
 
     def print_board(self):
         if self.is_done:
@@ -215,7 +224,7 @@ class ConnectFour:
     def get_player_selection(self):
         while True:
             try:
-                print(f'Available columns: {str(self.available_actions)}')
+                print(f'Available Actions: {str(self.available_actions)}')
                 selection = input('Select column [0-6] which is not -1: ')
                 selection = int(selection)
                 if self.available_actions[selection] == -1:
@@ -225,6 +234,7 @@ class ConnectFour:
                 print('[ERROR] An error has occurred: ' + str(e))
                 print('[ERROR] Please input a valid column')
 
+    # Checks if the game is a draw
     def check_for_draw(self):
         # Check if all actions are -1
         for action in self.available_actions:
@@ -262,4 +272,4 @@ class ConnectFour:
         return self.game_state
 
 if __name__ == '__main__':
-    ConnectFour()
+    connect_four = ConnectFour(2)
