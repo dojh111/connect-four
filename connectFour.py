@@ -130,7 +130,7 @@ class ConnectFour:
                     break # Not continuous matching token
                 curr_row += 1
                 curr_column += 1
-        # Calculate pieces to diagonal top lef of current piece
+        # Calculate pieces to diagonal top left of current piece
         if selected_column != 0 and selected_row != 0: # Ensure there are still spaces to left, and top
             curr_row = selected_row - 1
             curr_column = selected_column - 1
@@ -142,6 +142,43 @@ class ConnectFour:
                 curr_row -= 1
                 curr_column -= 1
         return 1 + diagonal_down_right_count + diagonal_up_left_count
+
+    '''
+    Calculates diagonal from top right down to bottom left
+    Example:
+    0 0 0 1
+    0 0 1 0
+    0 1 0 0
+    1 0 0 0
+    '''
+    def calculate_diagonal_two(self, selected_column):
+        diagonal_down_left_count = 0
+        diagonal_up_right_count = 0
+        selected_row = self.available_actions[selected_column]
+        player_token = self.player_turn
+        # Calculate pieces to diagonal bottom left of current piece
+        if selected_column != 0 and selected_row != 5:   # Ensure there are still spaces to left, and bottom
+            curr_row = selected_row + 1
+            curr_column = selected_column - 1
+            while curr_row <= 5 and curr_column >= 0:
+                if self.game_state[curr_row][curr_column] == player_token:
+                    diagonal_down_left_count += 1
+                else:
+                    break # Not continuous matching token
+                curr_row += 1
+                curr_column -= 1
+        # Calculate pieces to diagonal top right of current piece
+        if selected_column != 6 and selected_row != 0: # Ensure there are still spaces to right, and top
+            curr_row = selected_row - 1
+            curr_column = selected_column - 1
+            while curr_row >= 0 and curr_column <= 6:
+                if self.game_state[curr_row][curr_column] == player_token:
+                    diagonal_up_right_count += 1
+                else:
+                    break # Not continuous matching token
+                curr_row -= 1
+                curr_column += 1
+        return 1 + diagonal_down_left_count + diagonal_up_right_count
 
     '''
     Check if the game has ended
@@ -166,6 +203,11 @@ class ConnectFour:
             self.is_done = True
             self.print_board()
             print(f'[GAME TERMINATION ENGINE] Player {str(self.player_turn)} won by DIAGONAL 1: Top Left to Bottom Right')
+            return True
+        elif self.calculate_diagonal_two(selected_column) == 4:
+            self.is_done = True
+            self.print_board()
+            print(f'[GAME TERMINATION ENGINE] Player {str(self.player_turn)} won by DIAGONAL 2: Top Right to Bottom Left')
             return True
         return False
 
