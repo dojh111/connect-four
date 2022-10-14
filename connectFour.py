@@ -12,7 +12,6 @@ class ConnectFour:
         self.game_state = np.zeros((6,7))
         # Initialise all available positions for pieces to land on at start of game
         self.available_actions = [5, 5, 5, 5, 5, 5, 5]
-        # Start with turn for player 1
         self.player_turn = 1
         self.is_done = False
         self.is_draw = False
