@@ -45,14 +45,15 @@ Let the AI play against itself, choose top performing to mate
 
 1. Selected column results in win
 2. Selected column results in blocking opponent from winning next turn
-3. Selected column leads to 3 tiles in a row, in any direction
-4. Selected column leads to 2 tiles in a row, in any direction
+3. Selected column leads to 3 tiles in a row, in any direction (line of 3, can go through empty spaces, can ignore empty, as long as not blocked by opponent)
+4. Selected column leads to 2 tiles in a row, in any direction (line of 2, can go through empty spaces)
 5. Selected column leads to situation of inevitable win - 2 in a row, both sides still have space for tiles
 6. Number of possible directions to win from (left, right, up, diagonals are not blocked)
 7. Selecting a column that will result in opponent winning the next turn (negative value)
 8. Placing at column leads to one away from winning (empty space gap - To confuse human players) (Non-obvious 3 in a row: 2 on one side together, 1 gap)
 9. Placing at column leads to 3 tiles in a row, in > 1 direction
 10. Placing at column leads to 2 tiles in a row, in > 1 direction
+11. Placing on columns 2, 4 and 6
 
 **Note:** An inevitable win is a move which will result in 3 in a row, with empty spaces on either side of the set
 

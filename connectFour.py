@@ -7,12 +7,16 @@ Pieces for each player is defined by the integers: 1 for player 1 and 2 for play
 '''
 class ConnectFour:
     # Constructor
-    def __init__(self, agent_player_number):
+    def __init__(self, agent_player_number, height=6, width=7):
+        self.bottom_index = height - 1
+        self.top_index = 0
+        self.rightmost_index = width - 1
+        self.leftmost_index = 0
         print('[NEW GAME] Starting new connect 4 game')
-        self.game_state = np.zeros((6,7))
+        self.game_state = np.zeros((height,width))
         # Initialise all available positions for pieces to land on at start of game
-        self.available_actions = [5, 5, 5, 5, 5, 5, 5]
-        self.player_turn = 1
+        self.available_actions = [self.bottom_index] * width
+        self.player_turn = 1    # You can use the player turn to check which player you are
         self.is_done = False
         self.is_draw = False
         self.turn_count = 1
@@ -139,7 +143,7 @@ class ConnectFour:
         row = self.available_actions[selected_column]
         player_token = self.player_turn
         # Calculate number of pieces to left
-        if selected_column != 0:
+        if selected_column != self.leftmost_index:
             curr_column = selected_column - 1
             while curr_column >= 0:
                 if self.game_state[row][curr_column] == player_token:
@@ -148,7 +152,7 @@ class ConnectFour:
                     break # Not continuous matching token
                 curr_column -= 1
         # Calculate number of pieces to right
-        if selected_column != 6:
+        if selected_column != self.rightmost_index:
             curr_column = selected_column + 1
             while curr_column <= 6:
                 if self.game_state[row][curr_column] == player_token:
@@ -167,7 +171,7 @@ class ConnectFour:
         # Calculate number of pieces to bottom
         if row != 5:
             curr_row = row + 1
-            while curr_row <= 5:
+            while curr_row <= self.bottom_index:
                 if self.game_state[curr_row][selected_column] == player_token:
                     down_count += 1
                 else:
@@ -176,7 +180,7 @@ class ConnectFour:
         # Calculate number of pieces to top
         if row != 0:
             curr_row = row - 1
-            while curr_row >= 0:
+            while curr_row >= self.top_index:
                 if self.game_state[curr_row][selected_column] == player_token:
                     up_count += 1
                 else:
@@ -198,10 +202,10 @@ class ConnectFour:
         selected_row = self.available_actions[selected_column]
         player_token = self.player_turn
         # Calculate pieces to diagonal bottom right of current piece
-        if selected_column != 6 and selected_row != 5:   # Ensure there are still spaces to right, and bottom
+        if selected_column != self.rightmost_index and selected_row != self.bottom_index:   # Ensure there are still spaces to right, and bottom
             curr_row = selected_row + 1
             curr_column = selected_column + 1
-            while curr_row <= 5 and curr_column <= 6:
+            while curr_row <= self.bottom_index and curr_column <= self.rightmost_index:
                 if self.game_state[curr_row][curr_column] == player_token:
                     diagonal_down_right_count += 1
                 else:
@@ -212,7 +216,7 @@ class ConnectFour:
         if selected_column != 0 and selected_row != 0: # Ensure there are still spaces to left, and top
             curr_row = selected_row - 1
             curr_column = selected_column - 1
-            while curr_row >= 0 and curr_column >= 0:
+            while curr_row >= self.top_index and curr_column >= self.leftmost_index:
                 if self.game_state[curr_row][curr_column] == player_token:
                     diagonal_up_left_count += 1
                 else:
@@ -235,10 +239,10 @@ class ConnectFour:
         selected_row = self.available_actions[selected_column]
         player_token = self.player_turn
         # Calculate pieces to diagonal bottom left of current piece
-        if selected_column != 0 and selected_row != 5:   # Ensure there are still spaces to left, and bottom
+        if selected_column != self.leftmost_index and selected_row != self.bottom_index:   # Ensure there are still spaces to left, and bottom
             curr_row = selected_row + 1
             curr_column = selected_column - 1
-            while curr_row <= 5 and curr_column >= 0:
+            while curr_row <= self.bottom_index and curr_column >= self.leftmost_index:
                 if self.game_state[curr_row][curr_column] == player_token:
                     diagonal_down_left_count += 1
                 else:
@@ -246,10 +250,10 @@ class ConnectFour:
                 curr_row += 1
                 curr_column -= 1
         # Calculate pieces to diagonal top right of current piece
-        if selected_column != 6 and selected_row != 0: # Ensure there are still spaces to right, and top
+        if selected_column != self.rightmost_index and selected_row != self.top_index: # Ensure there are still spaces to right, and top
             curr_row = selected_row - 1
             curr_column = selected_column - 1
-            while curr_row >= 0 and curr_column <= 6:
+            while curr_row >= self.top_index and curr_column <= self.rightmost_index:
                 if self.game_state[curr_row][curr_column] == player_token:
                     diagonal_up_right_count += 1
                 else:
