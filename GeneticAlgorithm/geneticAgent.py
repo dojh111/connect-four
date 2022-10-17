@@ -19,7 +19,9 @@ class GeneticAgent:
             self.opponent_number = 2
         elif self.player_number == 2:
             self.opponent_number = 1
+        # ------ Genetically Created Feature Weights ------ #
         self.feature_weights = feature_weights
+        print(self.feature_weights)
         # ------ Board indexes ------ #
         self.bottom_index = board_height - 1        # Bottom index = largest number
         self.top_index = 0
@@ -27,11 +29,19 @@ class GeneticAgent:
         self.leftmost_index = 0
         self.middle_column_index = math.floor(board_width / 2)      # Board should always be an odd number width
         print('[BOARD DIMENSIONS]')
-        print(f'Size: {str(self.bottom_index)} tall, {str(self.rightmost_index)} wide')
+        print(f'Size: {str(board_height)} tall, {str(board_width)} wide')
+        print(f'Bottom Index: {str(self.bottom_index)}, Rightmost Index: {str(self.rightmost_index)}')
         print(f'Middle Column Index: {str(self.middle_column_index)}')
 
+    # Calculate the scores for each column, weighted by the provided feature weights generated from genetic algorithm
     def calculateColumnScore(self, features_array):
-        return 0
+        score = 0
+        if self.feature_weights == None or len(self.feature_weights) != len(features_array):
+            print('[INVALID FEATURE WEIGHTS] Invalid feature weights detected. Generating list of weight 1')
+            self.feature_weights = [1] * len(features_array)
+        for i in range(len(features_array)):
+            score += features_array[i] * self.feature_weights[i]
+        return score
     
     # --------- Calculate score of each column, and select best --------- #
     def selectAction(self, board, actions):
@@ -58,8 +68,8 @@ class GeneticAgent:
             features.append(self.check_if_blocking_inevitable_win(board=board, current_row=row_index, current_column=column_number))
 
             # ------- End of Features Gen for Column ------- #
-            print(f'[FEATURE EXTRACTION] Extracted feature array for column: {str(column_number)}')
-            print(features)
+            # print(f'[FEATURE EXTRACTION] Extracted feature array for column: {str(column_number)}')
+            # print(features)
             column_number += 1
             column_scores.append(self.calculateColumnScore(features_array=features))
         # Get best action. Account for multiple columns with the same score
@@ -186,8 +196,8 @@ class GeneticAgent:
         counts.append(self.count_tokens_to_diagonal_botright(player_number, board, selected_column, selected_row))
         counts.append(self.count_tokens_to_diagonal_topleft(player_number, board, selected_column, selected_row))
         counts.append(self.count_tokens_to_diagonal_topright(player_number, board, selected_column, selected_row))
-        print(f'[TOKEN COUNTS] Counts for tokens in 7 directions for player {str(self.player_number)}')
-        print(counts)
+        # print(f'[TOKEN COUNTS] Counts for tokens in 7 directions for player {str(self.player_number)}')
+        # print(counts)
         return counts
 
     # Calculates the number of unblocked tokens to left - Can include enoty spaces
