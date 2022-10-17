@@ -145,7 +145,7 @@ class ConnectFour:
         # Calculate number of pieces to left
         if selected_column != self.leftmost_index:
             curr_column = selected_column - 1
-            while curr_column >= 0:
+            while curr_column >= self.leftmost_index:
                 if self.game_state[row][curr_column] == player_token:
                     left_count += 1
                 else:
@@ -154,7 +154,7 @@ class ConnectFour:
         # Calculate number of pieces to right
         if selected_column != self.rightmost_index:
             curr_column = selected_column + 1
-            while curr_column <= 6:
+            while curr_column <= self.rightmost_index:
                 if self.game_state[row][curr_column] == player_token:
                     right_count += 1
                 else:
@@ -252,7 +252,7 @@ class ConnectFour:
         # Calculate pieces to diagonal top right of current piece
         if selected_column != self.rightmost_index and selected_row != self.top_index: # Ensure there are still spaces to right, and top
             curr_row = selected_row - 1
-            curr_column = selected_column - 1
+            curr_column = selected_column + 1
             while curr_row >= self.top_index and curr_column <= self.rightmost_index:
                 if self.game_state[curr_row][curr_column] == player_token:
                     diagonal_up_right_count += 1

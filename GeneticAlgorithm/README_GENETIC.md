@@ -50,10 +50,9 @@ Let the AI play against itself, choose top performing to mate
 5. Selected column leads to situation of inevitable win - 2 in a row, both sides still have space for tiles
 6. Number of possible directions to win from (left, right, up, diagonals are not blocked)
 7. Selecting a column that will result in opponent winning the next turn (negative value)
-8. Placing at column leads to one away from winning (empty space gap - To confuse human players) (Non-obvious 3 in a row: 2 on one side together, 1 gap)
-9. Placing at column leads to 3 tiles in a row, in > 1 direction
-10. Placing at column leads to 2 tiles in a row, in > 1 direction
-11. Placing on columns 2, 4 and 6
+8. Placing at column leads to 3 tiles in a row, in > 1 direction
+9. Placing at column leads to 2 tiles in a row, in > 1 direction
+10. Placing on columns 2, 4 and 6
 
 **Note:** An inevitable win is a move which will result in 3 in a row, with empty spaces on either side of the set
 
