@@ -1,4 +1,5 @@
 import math
+import random
 
 '''
 The GeneticAgent class is an implementation for an agent to play connect4
@@ -28,51 +29,82 @@ class GeneticAgent:
         print('[BOARD DIMENSIONS]')
         print(f'Size: {str(self.bottom_index)} tall, {str(self.rightmost_index)} wide')
         print(f'Middle Column Index: {str(self.middle_column_index)}')
+
+    def calculateColumnScore(self, features_array):
+        return 0
     
     # --------- Calculate score of each column, and select best --------- #
     def selectAction(self, board, actions):
-        # Available actions are non -1
-        features = []
         column_number = 0
+        column_scores = []
         for row_index in actions:
             if row_index == -1: # Invalid action, skip
                 column_number += 1
+                column_scores.append(-1)
                 continue
+            # Available actions are non -1
+            features = []
             # Get number of own player tokens in the 7 different directions, without being blocked by the opponent token
             token_counts = self.get_tokens_for_directions(board=board, player_number=self.player_number, selected_column=column_number, selected_row=row_index)
             # ------- Check Features ------- #
-            features.append(self.check_if_winning_move(board=board, selected_column=column_number, selected_row=row_index))     # Check if winning move available
+            features.append(self.check_if_winning_move(board=board, selected_column=column_number, selected_row=row_index, player_number=self.player_number))     # Check if winning move available
+            features.append(self.check_if_blocking_move(board=board, selected_column=column_number, selected_row=row_index))    # Check if token blocks opponent win
             features.append(self.check_if_row_of_two(token_counts=token_counts))    # Check if moves results in the creation of at least a row of 2
             features.append(self.check_if_row_of_three(token_counts=token_counts))  # Check if moves results in the creation of at least a row of 3
             features.append(self.check_if_middle_column(column_number))
             features.append(self.check_if_edge_column(column_number))
             features.append(self.check_if_other_column(column_number))
+            features.append(self.check_if_inevitable_horizontal_win(board=board, current_row=row_index, current_column=column_number, player_number=self.player_number))
+            features.append(self.check_if_blocking_inevitable_win(board=board, current_row=row_index, current_column=column_number))
 
             # ------- End of Features Gen for Column ------- #
+            print(f'[FEATURE EXTRACTION] Extracted feature array for column: {str(column_number)}')
+            print(features)
             column_number += 1
-        print('[FEATURE EXTRACTION] Extracted features: ')
-        print(features)
-        return 0
+            column_scores.append(self.calculateColumnScore(features_array=features))
+        # Get best action. Account for multiple columns with the same score
+        max_score = max(column_scores)
+        actions = []
+        column_number = 0
+        for score in column_scores:
+            if score == max_score:
+                actions.append(column_number)
+            column_number += 1
+        best_action = 0
+        if len(actions) > 1:
+            # Randomly choose
+            best_action = random.randrange(len(actions))
+        else:
+            best_action = actions[0]
+        print('[COLUMN SCORES]')
+        print(column_scores)
+        print(f'Best action selected: {str(best_action)}')
+        return best_action
 
     # Check if putting token in column results in a win for agent
-    def check_if_winning_move(self, board, selected_column, selected_row):
-        if self.check_horizontal_win(board=board, selected_column=selected_column, selected_row=selected_row) == 4:
+    def check_if_winning_move(self, board, selected_column, selected_row, player_number):
+        if self.check_horizontal_win(board=board, selected_column=selected_column, selected_row=selected_row, player_number=player_number) == 4:
             print('[WIN MOVE CHECKER] HORIZONTAL win detected')
             return 1
-        elif self.check_vertical_win(board=board, selected_column=selected_column, selected_row=selected_row) == 4:
+        elif self.check_vertical_win(board=board, selected_column=selected_column, selected_row=selected_row, player_number=player_number) == 4:
             print('[WIN MOVE CHECKER] VERTICAL win detected')
             return 1
-        elif self.check_diagonalone_win(board=board, selected_column=selected_column, selected_row=selected_row) == 4:
+        elif self.check_diagonalone_win(board=board, selected_column=selected_column, selected_row=selected_row, player_number=player_number) == 4:
             print('[WIN MOVE CHECKER] DIAGONAL 1 win detected')
             return 1
-        elif self.check_diagonaltwo_win(board=board, selected_column=selected_column, selected_row=selected_row) == 4:
+        elif self.check_diagonaltwo_win(board=board, selected_column=selected_column, selected_row=selected_row, player_number=player_number) == 4:
             print('[WIN MOVE CHECKER] DIAGONAL 2 win detected')
             return 1
         return 0
 
-    # Check if putting token in column results in blocking the opponent from winning
+    '''
+    Check if putting token in column results in blocking the opponent from winning
+    We run check_if_winning_move() but for the opponent instead - Simulating if we do not place the token at this time, at this column,
+    the opponent would be able to place their token here in the next step, and win the game
+    '''
     def check_if_blocking_move(self, board, selected_column, selected_row):
-        return
+        result = self.check_if_winning_move(board=board, selected_column=selected_column, selected_row=selected_row, player_number=self.opponent_number)
+        return result
 
     # Checks if placing token at selected column creates at least a line of 2
     def check_if_row_of_two(self, token_counts):
@@ -104,8 +136,44 @@ class GeneticAgent:
             return 0
         return 1
 
-    def check_if_inevitable_horizontal_win(self):
-        return
+    def check_if_inevitable_horizontal_win(self, board, current_row, current_column, player_number):
+        if self.check_if_edge_column(current_column) == 1:
+            return 0    # Cannot form inevitable win when placing on edge tiles
+        # If adjacent is to the right of our current column
+        if board[current_row][current_column + 1] == player_number:
+            # Check is empty to left of column
+            left_index = current_column - 1
+            if left_index < self.leftmost_index: # Out of index
+                return 0
+            elif board[current_row][left_index] != 0:
+                return 0
+            # Check to right of adjacent
+            right_index = current_column + 2
+            if right_index > self.rightmost_index: # Out of index
+                return 0
+            elif board[current_row][right_index] != 0:
+                return 0
+            return 1
+        # Adjacent to the left of our current column
+        elif board[current_row][current_column - 1] == player_number:
+            # Check is empty to right of column
+            right_index = current_column + 1
+            if right_index > self.rightmost_index: # Out of index
+                return 0
+            elif board[current_row][right_index] != 0:
+                return 0
+            # Check to left of adjacent
+            left_index = current_column - 2
+            if left_index < self.leftmost_index: # Out of index
+                return 0
+            elif board[current_row][left_index] != 0:
+                return 0
+            return 1
+        return 0
+
+    # Check if placing on column prevents the opponent from getting an inevitable win
+    def check_if_blocking_inevitable_win(self, board, current_row, current_column):
+        return self.check_if_inevitable_horizontal_win(board=board, current_row=current_row, current_column=current_column, player_number=self.opponent_number)
 
     # ------------ Tokens in direction count functions: Continues when encountering blank spaces ------------ #
 
@@ -245,15 +313,14 @@ class GeneticAgent:
     # --------------- Winning move calculation functions: Must be CONSECUTIVE ---------------- #
 
     # Checks to the left and right of last placed piece to determine if 4 in a row has been achieved
-    def check_horizontal_win(self, board, selected_column, selected_row):
+    def check_horizontal_win(self, board, selected_column, selected_row, player_number):
         left_count = 0
         right_count = 0
-        player_token = self.player_number
         # Calculate number of pieces to left
         if selected_column != self.leftmost_index:
             curr_column = selected_column - 1
             while curr_column >= self.leftmost_index:
-                if board[selected_row][curr_column] == player_token:
+                if board[selected_row][curr_column] == player_number:
                     left_count += 1
                 else:
                     break # Not continuous matching token
@@ -262,7 +329,7 @@ class GeneticAgent:
         if selected_column != self.rightmost_index:
             curr_column = selected_column + 1
             while curr_column <= self.rightmost_index:
-                if board[selected_row][curr_column] == player_token:
+                if board[selected_row][curr_column] == player_number:
                     right_count += 1
                 else:
                     break # Not continuous matching token
@@ -270,15 +337,14 @@ class GeneticAgent:
         return 1 + left_count + right_count
     
     # Checks to the top and bottom of last placed piece to determine if 4 in a row has been achieved
-    def check_vertical_win(self, board, selected_column, selected_row):
+    def check_vertical_win(self, board, selected_column, selected_row, player_number):
         up_count = 0
         down_count = 0
-        player_token = self.player_number
         # Calculate number of pieces to bottom
         if selected_row != 5:
             curr_row = selected_row + 1
             while curr_row <= self.bottom_index:
-                if board[curr_row][selected_column] == player_token:
+                if board[curr_row][selected_column] == player_number:
                     down_count += 1
                 else:
                     break # Not continuous matching token
@@ -287,23 +353,22 @@ class GeneticAgent:
         if selected_row != 0:
             curr_row = selected_row - 1
             while curr_row >= self.top_index:
-                if board[curr_row][selected_column] == player_token:
+                if board[curr_row][selected_column] == player_number:
                     up_count += 1
                 else:
                     break # Not continuous matching token
                 curr_row -= 1
         return 1 + down_count + up_count
 
-    def check_diagonalone_win(self, board, selected_column, selected_row):
+    def check_diagonalone_win(self, board, selected_column, selected_row, player_number):
         diagonal_down_right_count = 0
         diagonal_up_left_count = 0
-        player_token = self.player_number
         # Calculate pieces to diagonal bottom right of current piece
         if selected_column != self.rightmost_index and selected_row != self.bottom_index:   # Ensure there are still spaces to right, and bottom
             curr_row = selected_row + 1
             curr_column = selected_column + 1
             while curr_row <= self.bottom_index and curr_column <= self.rightmost_index:
-                if board[curr_row][curr_column] == player_token:
+                if board[curr_row][curr_column] == player_number:
                     diagonal_down_right_count += 1
                 else:
                     break # Not continuous matching token
@@ -314,7 +379,7 @@ class GeneticAgent:
             curr_row = selected_row - 1
             curr_column = selected_column - 1
             while curr_row >= self.top_index and curr_column >= self.leftmost_index:
-                if board[curr_row][curr_column] == player_token:
+                if board[curr_row][curr_column] == player_number:
                     diagonal_up_left_count += 1
                 else:
                     break # Not continuous matching token
@@ -322,16 +387,15 @@ class GeneticAgent:
                 curr_column -= 1
         return 1 + diagonal_down_right_count + diagonal_up_left_count
 
-    def check_diagonaltwo_win(self, board, selected_column, selected_row):
+    def check_diagonaltwo_win(self, board, selected_column, selected_row, player_number):
         diagonal_down_left_count = 0
         diagonal_up_right_count = 0
-        player_token = self.player_number
         # Calculate pieces to diagonal bottom left of current piece
         if selected_column != self.leftmost_index and selected_row != self.bottom_index:   # Ensure there are still spaces to left, and bottom
             curr_row = selected_row + 1
             curr_column = selected_column - 1
             while curr_row <= self.bottom_index and curr_column >= self.leftmost_index:
-                if board[curr_row][curr_column] == player_token:
+                if board[curr_row][curr_column] == player_number:
                     diagonal_down_left_count += 1
                 else:
                     break # Not continuous matching token
@@ -342,7 +406,7 @@ class GeneticAgent:
             curr_row = selected_row - 1
             curr_column = selected_column - 1
             while curr_row >= self.top_index and curr_column <= self.rightmost_index:
-                if board[curr_row][curr_column] == player_token:
+                if board[curr_row][curr_column] == player_number:
                     diagonal_up_right_count += 1
                 else:
                     break # Not continuous matching token
