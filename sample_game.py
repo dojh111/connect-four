@@ -1,4 +1,4 @@
-from connectFour import ConnectFour
+from GameEnvironment.connectFour import ConnectFour
 from Agents.randomAgent import RandomAgent
 
 def get_player_selection():

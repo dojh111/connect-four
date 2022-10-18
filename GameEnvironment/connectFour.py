@@ -42,6 +42,8 @@ class ConnectFour:
         # Check if selected column is invalid
         if self.available_actions[selected_column] == -1:
             print('[INVALID ACTION] Invalid action selected, please try again')
+            print(selected_column)
+            self.print_board()
             return False
         is_terminated = self.update_game_state(selected_column)
         # Game has terminated

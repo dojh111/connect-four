@@ -1,4 +1,4 @@
-from connectFour import ConnectFour
+from GameEnvironment.connectFour import ConnectFour
 from Agents.randomAgent import RandomAgent
 from GeneticAlgorithm.geneticAgent import GeneticAgent
 
@@ -18,9 +18,10 @@ if __name__ == '__main__':
     # Play an infinite number of games: End with ctrl + c
     agent = GeneticAgent(1, None)
     count = 0
-    max_games = 100
+    max_games = 500
     accumulated_outcomes = []
-    while count < max_games:
+    to_continue = True
+    while count < max_games and to_continue:
         connect_four = ConnectFour(1) # Intitalise game with AGENT as player 1
         # connect_four = ConnectFour(2) # Intitialise game with AGENT as player 2
         random_agent = RandomAgent()
@@ -31,17 +32,17 @@ if __name__ == '__main__':
             game_state = connect_four.get_state()   # 2D numpy array: 1 = player 1 tokens, 2 = player 2 tokens
             # Is AGENT turn
             if turn_number % 2 == 1:
-                print('AGENT TURN')
+                # print('AGENT TURN')
                 # connect_four.print_board()
-                print(f'Available columns: {str(available_actions)}')
+                # print(f'Available columns: {str(available_actions)}')
                 best_action = agent.selectAction(game_state, available_actions)
-                # selection = get_player_selection()
+                # best_action = get_player_selection()
                 game_result = connect_four.play_turn(best_action)
             # Is Random AI turn
             elif turn_number % 2 == 0:
                 selection = random_agent.select_random_column(available_actions)
                 game_result = connect_four.play_turn(selection)
-                print(f'AI TURN OVER - Selected column: {str(selection)}')
+                # print(f'AI TURN OVER - Selected column: {str(selection)}')
         print(f'[Game Finished] Result for Agent: {str(game_result)}')
         count += 1
         accumulated_outcomes.append(game_result)

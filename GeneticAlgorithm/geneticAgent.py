@@ -28,16 +28,16 @@ class GeneticAgent:
         self.rightmost_index = board_width - 1
         self.leftmost_index = 0
         self.middle_column_index = math.floor(board_width / 2)      # Board should always be an odd number width
-        print('[BOARD DIMENSIONS]')
-        print(f'Size: {str(board_height)} tall, {str(board_width)} wide')
-        print(f'Bottom Index: {str(self.bottom_index)}, Rightmost Index: {str(self.rightmost_index)}')
-        print(f'Middle Column Index: {str(self.middle_column_index)}')
+        # print('[BOARD DIMENSIONS]')
+        # print(f'Size: {str(board_height)} tall, {str(board_width)} wide')
+        # print(f'Bottom Index: {str(self.bottom_index)}, Rightmost Index: {str(self.rightmost_index)}')
+        # print(f'Middle Column Index: {str(self.middle_column_index)}')
 
     # Calculate the scores for each column, weighted by the provided feature weights generated from genetic algorithm
     def calculateColumnScore(self, features_array):
         score = 0
         if self.feature_weights == None or len(self.feature_weights) != len(features_array):
-            print('[INVALID FEATURE WEIGHTS] Invalid feature weights detected. Generating list of weight 1')
+            # print('[INVALID FEATURE WEIGHTS] Invalid feature weights detected. Generating list of weight 1')
             self.feature_weights = [1] * len(features_array)
         for i in range(len(features_array)):
             score += features_array[i] * self.feature_weights[i]
@@ -61,6 +61,8 @@ class GeneticAgent:
             features.append(self.check_if_blocking_move(board=board, selected_column=column_number, selected_row=row_index))    # Check if token blocks opponent win
             features.append(self.check_if_row_of_two(token_counts=token_counts))    # Check if moves results in the creation of at least a row of 2
             features.append(self.check_if_row_of_three(token_counts=token_counts))  # Check if moves results in the creation of at least a row of 3
+            features.append(self.creates_multiple_row_of_two(token_counts=token_counts))
+            features.append(self.creates_mutiple_row_of_three(token_counts=token_counts))
             features.append(self.check_if_middle_column(column_number))
             features.append(self.check_if_edge_column(column_number))
             features.append(self.check_if_other_column(column_number))
@@ -83,12 +85,14 @@ class GeneticAgent:
         best_action = 0
         if len(actions) > 1:
             # Randomly choose
-            best_action = random.randrange(len(actions))
+            best_action_index = random.randrange(len(actions))
+            best_action = actions[best_action_index]
         else:
             best_action = actions[0]
-        print('[COLUMN SCORES]')
-        print(column_scores)
-        print(f'Best action selected: {str(best_action)}')
+        # print('[COLUMN SCORES]')
+        # print(column_scores)
+        # print(actions)
+        # print(f'Best action selected: {str(best_action)}')
         return best_action
 
     # Check if putting token in column results in a win for agent
@@ -123,10 +127,28 @@ class GeneticAgent:
                 return 1
         return 0
 
+    def creates_multiple_row_of_two(self, token_counts):
+        direction_count = 0
+        for count in token_counts:
+            if count >= 2:
+                direction_count += 1
+        if direction_count >= 2:
+            return 1
+        return 0
+
     def check_if_row_of_three(self, token_counts):
         for count in token_counts:
             if count >= 2:
                 return 1
+        return 0
+
+    def creates_mutiple_row_of_three(self, token_counts):
+        direction_count = 0
+        for count in token_counts:
+            if count >= 3:
+                direction_count += 1
+        if direction_count >= 2:
+            return 1
         return 0
 
     def check_if_middle_column(self, current_column):
