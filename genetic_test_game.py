@@ -16,7 +16,8 @@ This code file gives an example of how to use the ConnectFour class to allow 2 a
 '''
 if __name__ == '__main__':
     # Play an infinite number of games: End with ctrl + c
-    agent = GeneticAgent(1, None)
+    test_weights = [100, 97, 10, 20, 30, 40, 5, 1, 3, 90, 95]
+    agent = GeneticAgent(1, test_weights)
     count = 0
     max_games = 500
     accumulated_outcomes = []
@@ -40,7 +41,10 @@ if __name__ == '__main__':
                 game_result = connect_four.play_turn(best_action)
             # Is Random AI turn
             elif turn_number % 2 == 0:
-                selection = random_agent.select_random_column(available_actions)
+                print('YOUR TURN')
+                connect_four.print_board()
+                selection = get_player_selection()
+                # selection = random_agent.select_random_column(available_actions)      # Random agent
                 game_result = connect_four.play_turn(selection)
                 # print(f'AI TURN OVER - Selected column: {str(selection)}')
         print(f'[Game Finished] Result for Agent: {str(game_result)}')
@@ -48,6 +52,18 @@ if __name__ == '__main__':
         accumulated_outcomes.append(game_result)
         print()
     print('ALL GAMES PLAYED - FINAL OUTCOME')
-    print(accumulated_outcomes)
-    print(sum(accumulated_outcomes))
+    num_wins = 0
+    num_loss = 0
+    num_draw = 0
+    for outcome in accumulated_outcomes:
+        if outcome == 1:
+            num_wins += 1
+        elif outcome == 0:
+            num_draw += 1
+        elif outcome == -1:
+            num_loss += 1
+    print(f'WINS: {str(num_wins)}')
+    print(f'LOSS: {str(num_loss)}')
+    print(f'DRAW: {str(num_draw)}')
+            
 

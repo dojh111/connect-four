@@ -21,7 +21,7 @@ class GeneticAgent:
             self.opponent_number = 1
         # ------ Genetically Created Feature Weights ------ #
         self.feature_weights = feature_weights
-        print(self.feature_weights)
+        # print(self.feature_weights)
         # ------ Board indexes ------ #
         self.bottom_index = board_height - 1        # Bottom index = largest number
         self.top_index = 0
