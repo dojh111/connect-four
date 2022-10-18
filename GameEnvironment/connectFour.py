@@ -5,9 +5,10 @@ from pandas import *
 '''
 ConnectFour is a data structure to represent the state of the playing environment
 Pieces for each player is defined by the integers: 1 for player 1 and 2 for player 2
+
+This class acts as a template environment for the connect 4 game. Feel free to modify it to your liking
 '''
 class ConnectFour:
-    # Constructor
     def __init__(self, agent_player_number, height=6, width=7):
         self.bottom_index = height - 1
         self.top_index = 0
@@ -66,7 +67,10 @@ class ConnectFour:
         else:
             self.player_turn = 1
         return True
-
+        
+    # -------------------------------------------------------------------------------- #
+    ######## GAME LOGIC BELOW, DO NOT MODIFY WITH EXCEPTION OF PRINT STATEMENTS ########
+    # -------------------------------------------------------------------------------- #
     # Checks to the left and right of last placed piece to determine if 4 in a row has been achieved
     def calculate_horizontal_length(self, selected_column):
         left_count = 0

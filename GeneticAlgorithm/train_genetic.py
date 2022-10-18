@@ -15,7 +15,6 @@ class TrainGeneticAgents():
 
     '''
     Generates the initial 100 random weights for use in the genetic algorithm
-
     '''
     def generate_initial_weights(self):
         contestant_weights = []
@@ -26,7 +25,13 @@ class TrainGeneticAgents():
                 feature_weights.append(weight)
             contestant_weights.append(feature_weights)
         return contestant_weights
+
+    def generate_new_generation(self):
+        return
+
+    def mutate_weights(self):
+        return
     
 
 if __name__ == '__main__':
-    TrainGeneticAgents(11)
+    TrainGeneticAgents(11)  # Remember to update number of features

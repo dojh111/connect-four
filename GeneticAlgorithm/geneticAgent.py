@@ -28,10 +28,6 @@ class GeneticAgent:
         self.rightmost_index = board_width - 1
         self.leftmost_index = 0
         self.middle_column_index = math.floor(board_width / 2)      # Board should always be an odd number width
-        # print('[BOARD DIMENSIONS]')
-        # print(f'Size: {str(board_height)} tall, {str(board_width)} wide')
-        # print(f'Bottom Index: {str(self.bottom_index)}, Rightmost Index: {str(self.rightmost_index)}')
-        # print(f'Middle Column Index: {str(self.middle_column_index)}')
 
     # Calculate the scores for each column, weighted by the provided feature weights generated from genetic algorithm
     def calculateColumnScore(self, features_array):
@@ -66,8 +62,10 @@ class GeneticAgent:
             features.append(self.check_if_middle_column(column_number))
             features.append(self.check_if_edge_column(column_number))
             features.append(self.check_if_other_column(column_number))
-            features.append(self.check_if_inevitable_horizontal_win(board=board, current_row=row_index, current_column=column_number, player_number=self.player_number))
-            features.append(self.check_if_blocking_inevitable_win(board=board, current_row=row_index, current_column=column_number))
+            features.append(self.check_if_possible_inevitable_horizontal_win(board=board, current_row=row_index, current_column=column_number, player_number=self.player_number))
+            features.append(self.check_if_blocking_possible_inevitable_win(board=board, current_row=row_index, current_column=column_number))
+
+            # NEED TO ADD FEATURE TO CHECK IF ROW HAS 2 ADJACENT AND 2 0's for opponent (actual inevitable win - create 3 adjacent with 0s beside)
 
             # ------- End of Features Gen for Column ------- #
             # print(f'[FEATURE EXTRACTION] Extracted feature array for column: {str(column_number)}')
@@ -168,7 +166,7 @@ class GeneticAgent:
             return 0
         return 1
 
-    def check_if_inevitable_horizontal_win(self, board, current_row, current_column, player_number):
+    def check_if_possible_inevitable_horizontal_win(self, board, current_row, current_column, player_number):
         if self.check_if_edge_column(current_column) == 1:
             return 0    # Cannot form inevitable win when placing on edge tiles
         # If adjacent is to the right of our current column
@@ -204,8 +202,8 @@ class GeneticAgent:
         return 0
 
     # Check if placing on column prevents the opponent from getting an inevitable win
-    def check_if_blocking_inevitable_win(self, board, current_row, current_column):
-        return self.check_if_inevitable_horizontal_win(board=board, current_row=current_row, current_column=current_column, player_number=self.opponent_number)
+    def check_if_blocking_possible_inevitable_win(self, board, current_row, current_column):
+        return self.check_if_possible_inevitable_horizontal_win(board=board, current_row=current_row, current_column=current_column, player_number=self.opponent_number)
 
     # ------------ Tokens in direction count functions: Continues when encountering blank spaces ------------ #
 

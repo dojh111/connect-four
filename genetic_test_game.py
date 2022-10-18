@@ -16,7 +16,7 @@ This code file gives an example of how to use the ConnectFour class to allow 2 a
 '''
 if __name__ == '__main__':
     # Play an infinite number of games: End with ctrl + c
-    feature_weights = [100, 97, 10, 20, 30, 40, 5, 1, 3, 90, 95]
+    feature_weights = [0.467, 0.397, 0.044, 0.239, 0.592, 0.554, 0.783, 0.496, 0.561, 0.418, 0.033]
     agent = GeneticAgent(1, feature_weights)
     count = 0
     max_games = 1000
@@ -33,7 +33,6 @@ if __name__ == '__main__':
             game_state = connect_four.get_state()   # 2D numpy array: 1 = player 1 tokens, 2 = player 2 tokens
             # Is AGENT turn
             if turn_number % 2 == 1:
-                # print('AGENT TURN')
                 # connect_four.print_board()
                 # print(f'Available columns: {str(available_actions)}')
                 best_action = agent.selectAction(game_state, available_actions)
@@ -41,7 +40,6 @@ if __name__ == '__main__':
                 game_result = connect_four.play_turn(best_action)
             # Is Random AI turn
             elif turn_number % 2 == 0:
-                print('YOUR TURN')
                 connect_four.print_board()
                 selection = get_player_selection()
                 # selection = random_agent.select_random_column(available_actions)      # Random agent
