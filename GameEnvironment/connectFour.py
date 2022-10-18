@@ -126,6 +126,7 @@ class ConnectFour:
                 print('[ERROR] Please input a valid column')
 
     # Prints out the current board
+    # Can look at pretty print board
     def print_board(self):
         if self.is_done:
             print('------- GAME OVER ------')

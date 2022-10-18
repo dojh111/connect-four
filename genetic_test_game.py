@@ -19,7 +19,7 @@ if __name__ == '__main__':
     test_weights = [100, 97, 10, 20, 30, 40, 5, 1, 3, 90, 95]
     agent = GeneticAgent(1, test_weights)
     count = 0
-    max_games = 500
+    max_games = 1000
     accumulated_outcomes = []
     to_continue = True
     while count < max_games and to_continue:
