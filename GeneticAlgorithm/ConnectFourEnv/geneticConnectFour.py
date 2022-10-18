@@ -6,9 +6,9 @@ from pandas import *
 ConnectFour is a data structure to represent the state of the playing environment
 Pieces for each player is defined by the integers: 1 for player 1 and 2 for player 2
 '''
-class ConnectFour:
+class GeneticConnectFour:
     # Constructor
-    def __init__(self, agent_player_number, height=6, width=7):
+    def __init__(self, height=6, width=7):
         self.bottom_index = height - 1
         self.top_index = 0
         self.rightmost_index = width - 1
@@ -21,51 +21,26 @@ class ConnectFour:
         self.is_done = False
         self.is_draw = False
         self.turn_count = 1
-        self.agent_player_number = agent_player_number  # Determines if agent will be player 1 or 2
-        self.agent_game_outcome = 0    # Outcome for agent - 0 = Draw, -1 = Lose, 1 = Win 
-        # self.start_game()     # Uncomment to start game for human player - For testing and debugging purposes
-
-    # Clears the terminal screen to reduce clutter
-    def clear(self):
-        # for windows
-        if name == 'nt':
-            _ = system('cls')
-        # for mac and linux(here, os.name is 'posix')
-        else:
-            _ = system('clear')
 
     '''
-    Returns True if action is valid, False if chosen action is not valid
+    Modified turn playing feature for training genetic algorithm and agent
     '''
     def play_turn(self, selected_column):
-        # Check if selected column is invalid
-        if self.available_actions[selected_column] == -1:
-            print('[INVALID ACTION] Invalid action selected, please try again')
-            return False
         is_terminated = self.update_game_state(selected_column)
         # Game has terminated
         if is_terminated:
-            if self.agent_player_number == self.player_turn:
-                print(f'[GAME OVER] Player {str(self.player_turn)}, AGENT has won!')
-                self.agent_game_outcome = 1     # Agent has won the game
-                return self.agent_game_outcome
-            else:
-                print(f'[GAME OVER] Player {str(self.player_turn)}, AI has won!')
-                self.agent_game_outcome = -1    # Agent has lost the game
-                return self.agent_game_outcome
+            return self.player_turn # Return player number that won
         # Game continues
         self.turn_count += 1
         if self.turn_count == 42:   # Board has been filled
             self.is_draw = True
             self.is_done = True
-            print(f'[GAME OVER] Draw! - No more turns remaining')
-            return self.agent_game_outcome
+            return 0    # No player has won
         # Set player turn
         if self.player_turn == 1:
             self.player_turn = 2
         else:
             self.player_turn = 1
-        return True
 
     # Checks to the left and right of last placed piece to determine if 4 in a row has been achieved
     def calculate_horizontal_length(self, selected_column):
@@ -202,25 +177,17 @@ class ConnectFour:
         # Check horizontals
         if self.calculate_horizontal_length(selected_column) == 4:
             self.is_done = True
-            self.print_board()
-            print(f'[GAME TERMINATION ENGINE] Player {str(self.player_turn)} won by HORIZONTAL')
             return True
         # Check verticals
         elif self.calculate_vertical_length(selected_column) == 4:
             self.is_done = True
-            self.print_board()
-            print(f'[GAME TERMINATION ENGINE] Player {str(self.player_turn)} won by VERTICAL')
             return True
         # Check diagonal 1 - Top left to bottom right
         elif self.calculate_diagonal_one(selected_column) == 4:
             self.is_done = True
-            self.print_board()
-            print(f'[GAME TERMINATION ENGINE] Player {str(self.player_turn)} won by DIAGONAL 1: Top Left to Bottom Right')
             return True
         elif self.calculate_diagonal_two(selected_column) == 4:
             self.is_done = True
-            self.print_board()
-            print(f'[GAME TERMINATION ENGINE] Player {str(self.player_turn)} won by DIAGONAL 2: Top Right to Bottom Left')
             return True
         return False
 
@@ -250,53 +217,3 @@ class ConnectFour:
 
     def get_turn_number(self):
         return self.turn_count
-
-    '''
-    Starts the main game loop - For testing purposes
-    '''
-    def start_game(self):
-        while True:
-            self.clear()
-            # Main game loop
-            player_selection = -1
-            self.print_board()
-            if self.player_turn == self.agent_player_number:    # Action selection for our AI agent
-                print(f'[TURN {str(self.turn_count)} - AGENT] Player {str(self.player_turn)}\'s turn:')
-                player_selection = self.get_player_selection()
-            else:                                               # Actions selection for the opponent player
-                print(f'[TURN {str(self.turn_count)} - AI] Player {str(self.player_turn)}\'s turn:')
-                player_selection = self.get_player_selection()
-            is_terminated = self.update_game_state(player_selection)
-            # Game has terminated
-            if is_terminated:
-                if self.agent_player_number == self.player_turn:
-                    print(f'[GAME OVER] Player {str(self.player_turn)}, AGENT has won!')
-                    self.agent_game_outcome = 1     # Agent has won the game
-                    return self.agent_game_outcome
-                else:
-                    print(f'[GAME OVER] Player {str(self.player_turn)}, AI has won!')
-                    self.agent_game_outcome = -1    # Agent has lost the game
-                    return self.agent_game_outcome
-            # Game continues
-            self.turn_count += 1
-            if self.turn_count == 42:   # Board has been filled
-                self.is_draw = True
-                self.is_done = True
-                print(f'[GAME OVER] Draw! - No more turns remaining')
-                return self.agent_game_outcome
-            # Set player turn
-            if self.player_turn == 1:
-                self.player_turn = 2
-            else:
-                self.player_turn = 1
-
-    # Prints out the current board
-    # Can look at pretty print board
-    def print_board(self):
-        if self.is_done:
-            print('------- GAME OVER ------')
-        elif self.is_draw:
-            print('--------- DRAW ---------')
-        else:
-            print('------ GAME STATE ------')
-        print(DataFrame(self.game_state))

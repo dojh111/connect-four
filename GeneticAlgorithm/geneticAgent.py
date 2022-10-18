@@ -98,16 +98,16 @@ class GeneticAgent:
     # Check if putting token in column results in a win for agent
     def check_if_winning_move(self, board, selected_column, selected_row, player_number):
         if self.check_horizontal_win(board=board, selected_column=selected_column, selected_row=selected_row, player_number=player_number) == 4:
-            print('[WIN MOVE CHECKER] HORIZONTAL win detected')
+            # print('[WIN MOVE CHECKER] HORIZONTAL win detected')
             return 1
         elif self.check_vertical_win(board=board, selected_column=selected_column, selected_row=selected_row, player_number=player_number) == 4:
-            print('[WIN MOVE CHECKER] VERTICAL win detected')
+            # print('[WIN MOVE CHECKER] VERTICAL win detected')
             return 1
         elif self.check_diagonalone_win(board=board, selected_column=selected_column, selected_row=selected_row, player_number=player_number) == 4:
-            print('[WIN MOVE CHECKER] DIAGONAL 1 win detected')
+            # print('[WIN MOVE CHECKER] DIAGONAL 1 win detected')
             return 1
         elif self.check_diagonaltwo_win(board=board, selected_column=selected_column, selected_row=selected_row, player_number=player_number) == 4:
-            print('[WIN MOVE CHECKER] DIAGONAL 2 win detected')
+            # print('[WIN MOVE CHECKER] DIAGONAL 2 win detected')
             return 1
         return 0
 

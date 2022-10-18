@@ -16,8 +16,8 @@ This code file gives an example of how to use the ConnectFour class to allow 2 a
 '''
 if __name__ == '__main__':
     # Play an infinite number of games: End with ctrl + c
-    test_weights = [100, 97, 10, 20, 30, 40, 5, 1, 3, 90, 95]
-    agent = GeneticAgent(1, test_weights)
+    feature_weights = [100, 97, 10, 20, 30, 40, 5, 1, 3, 90, 95]
+    agent = GeneticAgent(1, feature_weights)
     count = 0
     max_games = 1000
     accumulated_outcomes = []
