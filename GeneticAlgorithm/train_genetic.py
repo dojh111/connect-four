@@ -7,7 +7,7 @@ class TrainGeneticAgents():
         self.num_decimals = 3
         self.num_agents = 100
         self.max_generations = 500
-        self.max_consecutive_wins = 10
+        self.max_consecutive_wins = 30
         self.current_generation = 0
         self.mutation_rate = 0.05
         print(f'[NUMBER OF FEATURES] {str(self.num_features)}')
@@ -38,6 +38,8 @@ class TrainGeneticAgents():
             results = tournament.play_tournament()
             best_weights = results[0]
             winner_weights = results[1]
+            print('GENERATION WINNER WEIGHTS:')
+            print(winner_weights)
             if self.check_if_same_winner(previous_winner_weights, winner_weights):
                 consecutive_win_counter += 1
                 if consecutive_win_counter == self.max_consecutive_wins:

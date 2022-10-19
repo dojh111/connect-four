@@ -16,8 +16,11 @@ This code file gives an example of how to use the ConnectFour class to allow 2 a
 '''
 if __name__ == '__main__':
     # Play an infinite number of games: End with ctrl + c
-    # feature_weights = [0.215, 0.948, 0.008, 0.411, 0.802, 0.897, 0.194, 0.109, 0.027, 0.449, 0.032, 0.954, 0.837]
-    feature_weights = [0.271, 0.802, 0.086, 0.314, 0.072, 0.802, 0.604, 0.129, 0.246, 0.118, 0.049, 0.562, 0.944]
+    feature_weights = [0.215, 0.948, 0.008, 0.411, 0.802, 0.897, 0.194, 0.109, 0.027, 0.449, 0.032, 0.954, 0.837]   # best
+    # feature_weights = [0.271, 0.802, 0.086, 0.314, 0.072, 0.802, 0.604, 0.129, 0.246, 0.118, 0.049, 0.562, 0.944]
+    # feature_weights = [0.638, 0.894, 0.198, 0.688, 0.723, 0.25, 0.408, 0.496, 0.286, 0.077, 0.063, 0.386, 0.69]
+    # feature_weights = [0.368, 0.936, 0.134, 0.24, 0.205, 0.181, 0.724, 0.58, 0.486, 0.09, 0.149, 0.344, 0.82]
+    # feature_weights = [0.772, 0.315, 0.023, 0.681, 0.205, 0.764, 0.955, 0.153, 0.189, 0.058, 0.228, 0.426, 0.585]
     agent_number = 1    # Set for agent to be player 1 or player 2
     agent = GeneticAgent(agent_number, feature_weights)
     count = 0
@@ -44,9 +47,9 @@ if __name__ == '__main__':
             # PLAYER 2 TURN
             elif turn_number % 2 == 0:
                 # --------- MOVE SELECTION --------- #
-                # connect_four.print_board()
-                # selection = get_player_selection()
-                selection = random_agent.select_random_column(available_actions)      # Random agent
+                connect_four.print_board()
+                selection = get_player_selection()
+                # selection = random_agent.select_random_column(available_actions)      # Random agent
                 # selection = agent.selectAction(game_state, available_actions)       # Trained Genetic Agent
                 # ----------- PLAY MOVE ----------- #
                 game_result = connect_four.play_turn(selection)
