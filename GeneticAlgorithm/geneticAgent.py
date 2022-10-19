@@ -64,8 +64,8 @@ class GeneticAgent:
             features.append(self.check_if_other_column(column_number))
             features.append(self.check_if_possible_inevitable_horizontal_win(board=board, current_row=row_index, current_column=column_number, player_number=self.player_number))
             features.append(self.check_if_blocking_possible_inevitable_win(board=board, current_row=row_index, current_column=column_number))
-
-            # NEED TO ADD FEATURE TO CHECK IF ROW HAS 2 ADJACENT AND 2 0's for opponent (actual inevitable win - create 3 adjacent with 0s beside)
+            features.append(self.check_if_inevitable_win_move(player_number=self.player_number, board=board, current_column=column_number, actions_list=actions))
+            features.append(self.check_if_blocking_inevitable_win_move(board=board, current_column=column_number, actions_list=actions))
 
             # ------- End of Features Gen for Column ------- #
             # print(f'[FEATURE EXTRACTION] Extracted feature array for column: {str(column_number)}')
@@ -115,8 +115,7 @@ class GeneticAgent:
     the opponent would be able to place their token here in the next step, and win the game
     '''
     def check_if_blocking_move(self, board, selected_column, selected_row):
-        result = self.check_if_winning_move(board=board, selected_column=selected_column, selected_row=selected_row, player_number=self.opponent_number)
-        return result
+        return self.check_if_winning_move(board=board, selected_column=selected_column, selected_row=selected_row, player_number=self.opponent_number)
 
     # Checks if placing token at selected column creates at least a line of 2
     def check_if_row_of_two(self, token_counts):
@@ -204,6 +203,51 @@ class GeneticAgent:
     # Check if placing on column prevents the opponent from getting an inevitable win
     def check_if_blocking_possible_inevitable_win(self, board, current_row, current_column):
         return self.check_if_possible_inevitable_horizontal_win(board=board, current_row=current_row, current_column=current_column, player_number=self.opponent_number)
+    
+    '''
+    First check if row we placing on has 2 adjacent already
+    Then check if adjacent columns are on same row as current
+    Then check if they are 0
+    '''
+    def check_if_inevitable_win_move(self, player_number, board, current_column, actions_list):
+        current_row = actions_list[current_column]
+        # Check if row already has 2 adjacent
+        left_count = 0
+        left_index = current_column - 1
+        right_count = 0
+        right_index = current_column + 1
+        if current_column != self.leftmost_index:
+            while left_index >= self.leftmost_index:
+                if board[current_row][left_index] == player_number:
+                    left_count += 1
+                else:
+                    break   # Encountered empty or opponent
+                left_index -= 1
+        if current_column != self.rightmost_index:
+            while right_index <= self.rightmost_index:
+                if board[current_row][right_index] == player_number:
+                    right_count += 1
+                else:
+                    break   # Encountered empty or opponent
+                right_index += 1
+        total_sum = left_count + right_count
+        if total_sum != 2:
+            return 0    # Not a valid inevitable win move
+        # No more valid space on either side
+        if left_index < self.leftmost_index or right_index > self.rightmost_index:
+            return 0
+        # Check if next move is at same height
+        adjacent_left_row = actions_list[left_index]
+        adjacent_right_row = actions_list[right_index]
+        if adjacent_left_row != current_row or adjacent_right_row != current_row:
+            return 0
+        # print('======== INEVITABLE WIN DETECTED ========')
+        # print(f'FOR COLUMN: {str(current_column)}')
+        return 1
+
+    def check_if_blocking_inevitable_win_move(self, board, current_column, actions_list):
+        return self.check_if_inevitable_win_move(self.opponent_number, board, current_column, actions_list)
+        
 
     # ------------ Tokens in direction count functions: Continues when encountering blank spaces ------------ #
 
