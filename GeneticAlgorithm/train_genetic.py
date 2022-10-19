@@ -6,7 +6,7 @@ class TrainGeneticAgents():
         self.num_features = num_features
         self.num_decimals = 3
         self.num_agents = 100
-        self.max_generations = 75
+        self.max_generations = 500
         self.max_consecutive_wins = 10
         self.current_generation = 0
         self.mutation_rate = 0.05

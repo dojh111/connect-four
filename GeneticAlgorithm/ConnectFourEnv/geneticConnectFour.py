@@ -175,18 +175,18 @@ class GeneticConnectFour:
     '''
     def check_if_game_done(self, selected_column):
         # Check horizontals
-        if self.calculate_horizontal_length(selected_column) == 4:
+        if self.calculate_horizontal_length(selected_column) >= 4:
             self.is_done = True
             return True
         # Check verticals
-        elif self.calculate_vertical_length(selected_column) == 4:
+        elif self.calculate_vertical_length(selected_column) >= 4:
             self.is_done = True
             return True
         # Check diagonal 1 - Top left to bottom right
-        elif self.calculate_diagonal_one(selected_column) == 4:
+        elif self.calculate_diagonal_one(selected_column) >= 4:
             self.is_done = True
             return True
-        elif self.calculate_diagonal_two(selected_column) == 4:
+        elif self.calculate_diagonal_two(selected_column) >= 4:
             self.is_done = True
             return True
         return False

@@ -16,7 +16,8 @@ This code file gives an example of how to use the ConnectFour class to allow 2 a
 '''
 if __name__ == '__main__':
     # Play an infinite number of games: End with ctrl + c
-    feature_weights = [0.215, 0.948, 0.008, 0.411, 0.802, 0.897, 0.194, 0.109, 0.027, 0.449, 0.032, 0.954, 0.837]
+    # feature_weights = [0.215, 0.948, 0.008, 0.411, 0.802, 0.897, 0.194, 0.109, 0.027, 0.449, 0.032, 0.954, 0.837]
+    feature_weights = [0.271, 0.802, 0.086, 0.314, 0.072, 0.802, 0.604, 0.129, 0.246, 0.118, 0.049, 0.562, 0.944]
     agent_number = 1    # Set for agent to be player 1 or player 2
     agent = GeneticAgent(agent_number, feature_weights)
     count = 0
