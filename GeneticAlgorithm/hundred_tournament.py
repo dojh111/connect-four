@@ -65,22 +65,17 @@ class HundredTournament():
         self.play_round_one()
         for i in range(2, 8):
             self.play_remaining_rounds(i)
-        # print('TOURNAMENT OVER')
-        print(f'Winner weights: {str(self.contestant_weights[self.round_participants["winner"][0]])}')
-        print(self.round_participants["winner"])
-        # print(self.round_participants[7])
-        # print(self.round_participants[6])
-        print(self.round_participants[5])
-
-        # print('Getting top 8 player weights...')
+        # Get top 8 player weights
         for participant in self.round_participants[5]:
             best_weights.append(self.contestant_weights[participant])
-        # print('Getting best of loser weights...')
+        # Get best 2 of loser weights
         # print(self.round_four_losers)
         for i in range(0, 2):
             best_loser = self.get_best_of_losers()
             best_weights.append(self.contestant_weights[best_loser[0]])
-        return best_weights
+        winner_weights = self.contestant_weights[self.round_participants["winner"][0]]
+        winner_number = self.round_participants["winner"][0]
+        return (best_weights, winner_weights, winner_number)
 
     # Plays a match between 2 players - Best of x
     def play_match(self, player_one_index, player_one_weights, player_two_index, player_two_weights):
@@ -133,7 +128,7 @@ class HundredTournament():
         return [player_one_stats, player_two_stats]
 
     def play_remaining_rounds(self, round_number):
-        print(f' ------------ ROUND {str(round_number)} ------------')
+        # print(f' ------------ ROUND {str(round_number)} ------------')
         # print(self.round_participants[round_number])
         # print(f'NUMBER OF PARTICIPANTS: {str(len(self.round_participants[round_number]))}')
         # Main tournament logic
@@ -153,24 +148,23 @@ class HundredTournament():
             player_two_wins = results[1]["wins"]
             if round_number < 7:
                 if player_one_wins >= player_two_wins: # If draw, just take player 1
-                    print(f'PLAYER {str(contestant_one)} won {str(player_one_wins)}:{str(player_two_wins)}')
+                    # print(f'PLAYER {str(contestant_one)} won {str(player_one_wins)}:{str(player_two_wins)}')
                     self.round_participants[round_number + 1].append(contestant_one)
                     if round_number == 4:   # Append loser wins
                         self.round_four_losers.append((contestant_two, player_two_wins))
                 elif player_two_wins > player_one_wins:
-                    print(f'PLAYER {str(contestant_two)} won {str(player_two_wins)}:{str(player_one_wins)}')
+                    # print(f'PLAYER {str(contestant_two)} won {str(player_two_wins)}:{str(player_one_wins)}')
                     self.round_participants[round_number + 1].append(contestant_two)
                     if round_number == 4:   # Append loser wins
                         self.round_four_losers.append((contestant_one, player_one_wins))
             else:   # Is final round
                 if player_one_wins >= player_two_wins: # If draw, just take player 1
-                    print(f'PLAYER {str(contestant_one)} won {str(player_one_wins)}:{str(player_two_wins)}')
+                    # print(f'PLAYER {str(contestant_one)} won {str(player_one_wins)}:{str(player_two_wins)}')
                     self.round_participants["winner"].append(contestant_one)
                 elif player_two_wins > player_one_wins:
-                    print(f'PLAYER {str(contestant_two)} won {str(player_two_wins)}:{str(player_one_wins)}')
+                    # print(f'PLAYER {str(contestant_two)} won {str(player_two_wins)}:{str(player_one_wins)}')
                     self.round_participants["winner"].append(contestant_two)
         match_number += 1
-        print(f' ------------ ROUND OVER ------------ ')
         return
 
     # Randomly selects 72 players to play round 1
@@ -186,7 +180,7 @@ class HundredTournament():
     Go through list of 72 participants and make them compete
     '''
     def play_round_one(self):
-        print(' ------------ ROUND 1 ------------')
+        # print(' ------------ ROUND 1 ------------')
         # print(self.round_participants[1])
         match_number = 1
         for i in range(0, 72, 2):  # Stop 1 prior
@@ -195,7 +189,7 @@ class HundredTournament():
             contestant_two = self.round_participants[1][i + 1]
             contestant_one_weights = self.contestant_weights[contestant_one]
             contestant_two_weights = self.contestant_weights[contestant_two]
-            print(f'[CONTESTANTS] {str(contestant_one)}, {str(contestant_two)}')
+            # print(f'[CONTESTANTS] {str(contestant_one)}, {str(contestant_two)}')
             # print(contestant_one_weights)
             # print(contestant_two_weights)
             results = self.play_match(contestant_one, contestant_one_weights, contestant_two, contestant_two_weights)
@@ -203,19 +197,18 @@ class HundredTournament():
             player_one_wins = results[0]["wins"]
             player_two_wins = results[1]["wins"]
             if player_one_wins >= player_two_wins: # If draw, just take player 1
-                print(f'PLAYER {str(contestant_one)} won {str(player_one_wins)}:{str(player_two_wins)}')
+                # print(f'PLAYER {str(contestant_one)} won {str(player_one_wins)}:{str(player_two_wins)}')
                 self.round_participants[2].append(contestant_one)
                 if len(self.round_participants["bye_participants"]) > 0:
                     bye_participant = self.round_participants["bye_participants"].pop(0)
                     self.round_participants[2].append(bye_participant)
                     # print(f'[BYE PARTICIPANT INSERTION] Player number: {str(bye_participant)}')
             elif player_two_wins > player_one_wins:
-                print(f'PLAYER {str(contestant_two)} won {str(player_two_wins)}:{str(player_one_wins)}')
+                # print(f'PLAYER {str(contestant_two)} won {str(player_two_wins)}:{str(player_one_wins)}')
                 self.round_participants[2].append(contestant_two)
                 if len(self.round_participants["bye_participants"]) > 0:
                     bye_participant = self.round_participants["bye_participants"].pop(0)
                     self.round_participants[2].append(bye_participant)
                     # print(f'[BYE PARTICIPANT INSERTION] Player number: {str(bye_participant)}')
             match_number += 1
-        print(' ------------ ROUND 1 OVER ------------')
         return

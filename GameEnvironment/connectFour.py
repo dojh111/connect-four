@@ -53,6 +53,7 @@ class ConnectFour:
             else:
                 print(f'[GAME OVER] Player {str(self.player_turn)}, AI has won!')
                 self.agent_game_outcome = -1    # Agent has lost the game
+                self.print_board()
                 return self.agent_game_outcome
         # Game continues
         self.turn_count += 1
@@ -204,26 +205,22 @@ class ConnectFour:
     '''
     def check_if_game_done(self, selected_column):
         # Check horizontals
-        if self.calculate_horizontal_length(selected_column) == 4:
+        if self.calculate_horizontal_length(selected_column) >= 4:
             self.is_done = True
-            self.print_board()
             print(f'[GAME TERMINATION ENGINE] Player {str(self.player_turn)} won by HORIZONTAL')
             return True
         # Check verticals
-        elif self.calculate_vertical_length(selected_column) == 4:
+        elif self.calculate_vertical_length(selected_column) >= 4:
             self.is_done = True
-            self.print_board()
             print(f'[GAME TERMINATION ENGINE] Player {str(self.player_turn)} won by VERTICAL')
             return True
         # Check diagonal 1 - Top left to bottom right
-        elif self.calculate_diagonal_one(selected_column) == 4:
+        elif self.calculate_diagonal_one(selected_column) >= 4:
             self.is_done = True
-            self.print_board()
             print(f'[GAME TERMINATION ENGINE] Player {str(self.player_turn)} won by DIAGONAL 1: Top Left to Bottom Right')
             return True
-        elif self.calculate_diagonal_two(selected_column) == 4:
+        elif self.calculate_diagonal_two(selected_column) >= 4:
             self.is_done = True
-            self.print_board()
             print(f'[GAME TERMINATION ENGINE] Player {str(self.player_turn)} won by DIAGONAL 2: Top Right to Bottom Left')
             return True
         return False
