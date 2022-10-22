@@ -1,8 +1,5 @@
 import collections
 import numpy as np
-import random
-import math
-import os
 
 import torch
 import torch.autograd as autograd
@@ -29,7 +26,7 @@ epsilon_decay = 500
 print_interval= 20
 
 
-NetworkInput = collections.namedtuple('NetworkInput', ('one_array', 'minus_one_array', 'turn_array'))
+NetworkInput = collections.namedtuple('NetworkInput', ('state', 'prior', 'value'))
 
 class ReplayBuffer():
     def __init__(self, buffer_limit=buffer_limit):
@@ -79,22 +76,20 @@ class ReplayBuffer():
         
         batch = self.buffer[sample_ind]
         
-        states_size = batch[0].state.shape
+        print(batch[0])
         
-        states = torch.zeros(batch_size, states_size[0], states_size[1], states_size[2], dtype=torch.float, device=device)
-        actions = torch.zeros(batch_size, 1, dtype=torch.long, device=device)
-        rewards = torch.zeros(batch_size, 1, dtype=torch.float, device=device)
-        next_states = torch.zeros(batch_size, states_size[0], states_size[1], states_size[2], dtype=torch.float, device=device)
-        dones = torch.zeros(batch_size, 1, dtype=torch.float, device=device)
+        states_size = batch[0][0].shape
+        
+        states = np.empty((batch_size, states_size[0], states_size[1], states_size[2]))
+        prior = np.empty((batch_size, 7))
+        values = np.empty((batch_size, 1))
         
         for i in range(batch_size):
-            states[i] = torch.tensor(batch[i].state, dtype=torch.float, device=device)
-            actions[i] = torch.tensor(batch[i].action, dtype=torch.long, device=device)
-            rewards[i] = torch.tensor(batch[i].reward, dtype=torch.float, device=device)
-            next_states[i] = torch.tensor(batch[i].next_state, dtype=torch.float, device=device)
-            dones[i] = torch.tensor(batch[i].done, dtype=torch.float, device=device)
+            states[i] = batch[i][0]
+            prior[i] = batch[i][1]
+            values[i] = batch[i][2]
         
-        return states, actions, rewards, next_states, dones
+        return states, prior, values
 
     def __len__(self):
         '''
@@ -187,9 +182,9 @@ class OutBlock(nn.Module):
         
         return p, v
 
-class ConnectNet(nn.Module):
+class AlphaConnect(nn.Module):
     def __init__(self):
-        super(ConnectNet, self).__init__()
+        super(AlphaConnect, self).__init__()
         self.conv = ConvolutionalBlock()
         for block in range(19):
             setattr(self, "res_%i" % block,ResBlock())
@@ -214,8 +209,8 @@ class AlphaLoss(torch.nn.Module):
         return total_error
     
 if __name__ == "__main__":
-    net = ConnectNet()
-    test = torch.rand(1,3,6,7)
+    net = AlphaConnect()
+    test = torch.rand(1,6,7,3)
     
     p,v = net(test)
     

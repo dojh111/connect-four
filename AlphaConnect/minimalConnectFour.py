@@ -1,5 +1,6 @@
 import numpy as np
 from copy import deepcopy
+import torch
 
 
 class Board:
@@ -65,13 +66,13 @@ class Board:
         return self.check_horizontal(self.player*-1) or self.check_vertical(self.player*-1) or self.check_diagonals(self.player*-1)
     
     def get_score(self):
-        if self.is_terminal():
+        if self.isDone():
             if self.check_winner():
                 return self.player*-1
-            else:
-                return 0
+        else:
+            return 0
     
-    def is_terminal(self):
+    def isDone(self):
         if self.last_action == None:
             return False
         return len(self.actions) == 0 or self.check_winner() != 0
@@ -79,15 +80,19 @@ class Board:
     def get_canonical_form(self):
         encoded = np.zeros([6,7,3]).astype(int)
          
-        x = np.where(self.board == 0, 0, np.where(self.board == 1, 1, 0))
-        o = np.where(self.board == 0, 0, np.where(self.board == -1, 1, 0))
-        turn = np.ones([6,7]) * self.player
+        for row in range(6):
+            for col in range(7):
+                if self.board[row,col] == 1:
+                    encoded[row,col,0] = 1
+                elif self.board[row,col] == -1:
+                    encoded[row,col,1] = 1
         
-        encoded[:,:,0] = x
-        encoded[:,:,1] = o
-        encoded[:,:,2] = turn
+        encoded[:,:,2] = self.player
         
-        return encoded
+        encoded = np.transpose(encoded, (2,0,1))
+        encoded = np.expand_dims(encoded, axis=0)
+        
+        return torch.Tensor(encoded)
     
     def print_board(self):
         temp = np.where(self.board == 0, ' ', np.where(self.board == 1, 'X', 'O'))
@@ -107,10 +112,7 @@ if __name__ == "__main__":
     board = Board()
     board.print_board()
     
-    while (not board.is_terminal()):
-        action = int(input("Enter action: "))
-        board = board.play_action(action)
-        board.print_board()
+    print(board.get_canonical_form())
         
         
         
