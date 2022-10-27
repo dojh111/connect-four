@@ -8,7 +8,7 @@ class Board:
         self.board = np.zeros((6, 7), dtype=int)
         self.player = 1 # Can be 1 or -1
         self.column_heights = np.ones(7, dtype=int) * 5
-        self.actions = list(range(7))
+        self.actions = np.arange(7)
         self.last_action = None
         
     def play_action(self, action):
@@ -25,7 +25,7 @@ class Board:
             
             # Update actions
             if new_board.column_heights[action] < 0:
-                new_board.actions.remove(action)
+                new_board.actions = np.delete(new_board.actions, np.where(new_board.actions == action))
             
             # Update player
             new_board.player *= -1
@@ -36,6 +36,9 @@ class Board:
     
     def get_actions(self):
         return self.actions
+    
+    def get_valid_moves_mask(self):
+        return np.array([1 if action in self.actions else 0 for action in range(7)])
     
     def check_horizontal(self, player):
         for i in range(6):
@@ -69,8 +72,10 @@ class Board:
         if self.isDone():
             if self.check_winner():
                 return self.player*-1
+            else:
+                return 0
         else:
-            return 0
+            return None
     
     def isDone(self):
         if self.last_action == None:
@@ -94,7 +99,7 @@ class Board:
         
         return torch.Tensor(encoded)
     
-    def print_board(self):
+    def __repr__(self):
         temp = np.where(self.board == 0, ' ', np.where(self.board == 1, 'X', 'O'))
         temp_board = list(temp)
         temp_board.insert(0, list(range(7)))
@@ -105,12 +110,16 @@ class Board:
         def format_board(board):
             return '\n\n'.join(format_row(row) for row in board)
         
-        print("\n\n" + format_board(temp_board) + "\n\n")
+        return "\n\n" + format_board(temp_board) + "\n\n"
         
         
 if __name__ == "__main__":
     board = Board()
-    board.print_board()
+    
+    board = board.play_action(2)
+    
+    print(board)
+    
     
     print(board.get_canonical_form())
         

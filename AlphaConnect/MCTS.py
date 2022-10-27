@@ -1,141 +1,122 @@
 import numpy as np
 import math
-from minimalConnectFour import Board
-from AlphaConnect import AlphaConnect
-from tqdm import tqdm
-import collections
+import torch
 
-
-class Node():
-    def __init__(self, state, move, parent=None):
-        self.state = state
-        self.move = move
-        self.is_expanded  = False
-        self.parent = parent
+class Node:
+    def __init__(self, prior, to_play):
+        self.visit_count = 0
+        self.to_play = to_play
+        self.prior = prior
+        self.value_sum = 0
         self.children = dict()
-        self.child_priors = np.zeros([7], dtype=np.float32)
-        self.child_total_value = np.zeros([7], dtype=np.float32)
-        self.child_number_visits = np.zeros([7], dtype=np.float32)
-        self.action_idxes = []
+        self.state = None
     
-    @property
-    def number_visits(self):
-        return self.parent.child_number_visits[self.move]
-
-    @number_visits.setter
-    def number_visits(self, value):
-        self.parent.child_number_visits[self.move] = value
-        
-    @property
-    def total_value(self):
-        return self.parent.child_total_value[self.move]
+    def expanded(self):
+        return len(self.children) > 0
     
-    @total_value.setter
-    def total_value(self, value):
-        self.parent.child_total_value[self.move] = value
-        
-    def child_Q(self):
-        return self.child_total_value / (1 + self.child_number_visits)
+    def value(self):
+        if self.visit_count == 0:
+            return 0
+        return self.value_sum / self.visit_count
     
-    def child_U(self):
-        return abs(self.child_priors) * math.sqrt(self.number_visits) / (1 + self.child_number_visits)
-    
-    def best_child(self):
-        if self.action_idxes != []:
-            best_moves = self.child_Q() + self.child_U()
-            bestmove = self.action_idxes[np.argmax(best_moves[self.action_idxes])]
+    def select_action(self, temperature):
+        visit_counts = np.array([child.visit_count for child in self.children.values()])
+        actions = np.array([action for action in self.children.keys()])
+        if temperature == 0:
+            action = actions[np.argmax(visit_counts)]
+        elif temperature == float('inf'):
+            action = np.random.choice(actions)
         else:
-            bestmove = np.argmax(self.child_Q() + self.child_U())
-        return bestmove
+            visit_count_distribution = visit_counts ** (1 / temperature)
+            visit_count_distribution = visit_count_distribution / np.sum(visit_count_distribution)
+            action = np.random.choice(actions, p=visit_count_distribution)
+        return action
     
-    def select_leaf(self):
-        current = self
-        while current.is_expanded:
-            best_move = current.best_child()
-            current = current.maybe_add_child(best_move)
-        return current
+    def select_child(self):
+        best_score = -float('inf')
+        best_action = -1
+        best_child = None
+        for action, child in self.children.items():
+            score = ucb_score(self, child, 1)
+            if score > best_score:
+                best_score = score
+                best_action = action
+                best_child = child
+                
+        return best_action, best_child
     
-    def add_exploration_noise(self, action_idx, child_priors):
-        valid_child_priors = child_priors[action_idx]
-        valid_child_priors = 0.75 * valid_child_priors + 0.25 * np.random.dirichlet(np.zeros([len(valid_child_priors)], dtype=np.float32) + 192)
+    def expand(self, state, to_play, action_probs):
+        self.to_play = to_play
+        self.state = state
+        for a, p in enumerate(action_probs):
+            if p != 0:
+                self.children[a] = Node(prior=p, to_play=to_play*-1)
+                
+    def __repr__(self):
+        prior = "{:.2f}".format(self.prior)
+        return "{} Prior: {} Count: {} Value: {}".format(self.state, prior, self.visit_count, self.value())
         
-        child_priors[action_idx] = valid_child_priors
-        return child_priors
+def ucb_score(parent, child, c):
+    prior_score = child.prior * math.sqrt(parent.visit_count) / (1 + child.visit_count)
     
-    def expand(self, child_priors):
-        self.is_expanded = True
-        action_idx = self.state.get_actions()
-        c_p = child_priors
-        
-        if action_idx == []:
-            self.is_expanded = False
-        
-        self.action_idxes = action_idx
-        c_p[[i for i in range(len(child_priors)) if i not in action_idx]] = 0
-        
-        if self.parent.parent == None:
-            c_p = self.add_exploration_noise(action_idx, c_p)
-        self.child_priors = c_p
-        
-    def maybe_add_child(self, move):
-        if move not in self.children:
-            next_state = self.state.play_action(move)
-            self.children[move] = Node(next_state, move, self)
-        return self.children[move]
+    if child.visit_count > 0:
+        value_score = -child.value()
+    else:
+        value_score = 0
     
-    def backup(self, value):
-        current = self
-        while current.parent is not None:
-            current.number_visits += 1
-            if current.state.player == 1:
-                current.total_value += value
-            elif current.state.player == -1:
-                current.total_value -= value
-        current.number_visits += 1
-        current = current.parent
-        
-class DummyNode():
-    def __init__(self):
-        self.parent = None
-        self.child_total_values = collections.defaultdict(float)
-        self.child_number_visits = collections.defaultdict(float)
-        
-def UCT_search(root, num_readouts, net, temp):
-    root = Node(root, move=None, parent=DummyNode())
-    
-    for i in range(num_readouts):
-        leaf = root.select_leaf()
-        canonical_board = leaf.state.canonical_board().cuda()
-        
-        child_priors, value_estimate = net(canonical_board)
-        
-        child_priors = child_priors.detach().cpu().numpy().reshape(-1)
-        value_estimate = value_estimate.detach().cpu().item()
-        
-        if leaf.state.is_terminal():
-            leaf.backup(value_estimate)
-            continue
-        
-        leaf.expand(child_priors)
-        leaf.backup(value_estimate)
-        
-    return root
+    return value_score + c * prior_score
 
-def get_policy(root, temp):
-    return ((root.child_number_visits)**(1/temp))/sum(root.child_number_visits**(1/temp))
+class MCTS:
+    def __init__(self, game, model, args, device):
+        self.game = game
+        self.model = model
+        self.args = args
+        self.device = device
+        
+    def run(self, model, state, to_play):
+        root = Node(0, to_play)
 
-def MCTS_self_play(net, num_readouts, temp, num_games):
-    game_history = []
-    for i in tqdm(range(num_games)):
-        game = Board()
-        root = Node(game, move=None, parent=DummyNode())
-        while not game.is_terminal():
-            root = UCT_search(root, num_readouts, net, temp)
-            policy = get_policy(root, temp)
-            move = np.random.choice(7, p=policy)
-            game = game.play_action(move)
-        game_history.append(game)
-    return game_history
+        fwdPass = torch.FloatTensor(state.get_canonical_form()).to(self.device)
+        action_probs, value = model(fwdPass)
+        action_probs = action_probs.detach().cpu().numpy()[0]
+        valid_moves = state.get_valid_moves_mask()
+        action_probs = action_probs * valid_moves
+        action_probs /= action_probs.sum()
+        root.expand(state, to_play, action_probs)
+        
+        for _ in range(self.args['num_simulations']):
+            node = root
+            search_path = [node]
+            
+            # Select
+            while node.expanded():
+                action, node = node.select_child()
+                search_path.append(node)
+                
+            parent = search_path[-2]
+            state = parent.state
+            
+            next_state = state.play_action(action)
+            
+            value = next_state.get_score()
+            
+            if value is None:
+                fwdPass = torch.FloatTensor(next_state.get_canonical_form()).to(self.device)
+                action_probs, value = model(fwdPass)
+                valid_moves = next_state.get_valid_moves_mask()
+                action_probs = action_probs.detach().cpu().numpy()[0]
+                action_probs = action_probs * valid_moves
+                action_probs /= action_probs.sum()
+                node.expand(next_state, parent.to_play * -1, action_probs)
+            
+            self.backpropagate(search_path, value, parent.to_play * -1)
+            
+        return root
     
-        
-        
+    def backpropagate(self, search_path, value, to_play):
+        for node in reversed(search_path):
+            node.value_sum += value if node.to_play == to_play else -value
+            node.visit_count += 1
+            
+            
+                

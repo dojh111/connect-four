@@ -1,4 +1,5 @@
 import collections
+from typing import Tuple
 import numpy as np
 
 import torch
@@ -13,7 +14,7 @@ model_path = './model.pt'
 # Hyperparameters --- don't change, RL is very sensitive
 learning_rate = 0.001
 gamma         = 0.98
-buffer_limit  = 5000
+buffer_limit  = 7500
 batch_size    = 32
 max_episodes  = 2000
 t_max         = 600
@@ -34,7 +35,7 @@ class ReplayBuffer():
         FILL ME : This function should initialize the replay buffer `self.buffer` with maximum size of `buffer_limit` (`int`).
                   len(self.buffer) should give the current size of the buffer `self.buffer`.
         '''
-        self.buffer = np.empty(buffer_limit, dtype=NetworkInput)
+        self.buffer = np.empty(buffer_limit, dtype=tuple)
         self.buffer_limit = buffer_limit
         self.counter =  0
         self.num_samples = 0
@@ -76,11 +77,7 @@ class ReplayBuffer():
         
         batch = self.buffer[sample_ind]
         
-        print(batch[0])
-        
-        states_size = batch[0][0].shape
-        
-        states = np.empty((batch_size, states_size[0], states_size[1], states_size[2]))
+        states = np.empty((batch_size, 3, 6, 7))
         prior = np.empty((batch_size, 7))
         values = np.empty((batch_size, 1))
         
@@ -137,7 +134,7 @@ class ConvolutionalBlock(nn.Module):
         s = s.view(-1, 3, 6, 7)  # batch_size x channels x board_x x board_y
         s = F.relu(self.bn1(self.conv1(s)))
         return s
-    
+     
 class ResBlock(nn.Module):
     def __init__(self, inplanes=128, planes=128, stride=1, downsample=None):
         super(ResBlock, self).__init__()
@@ -201,16 +198,21 @@ class AlphaLoss(torch.nn.Module):
     def __init__(self):
         super(AlphaLoss, self).__init__()
 
-    def forward(self, y_value, value, y_policy, policy):
+    def forward(self, y_value, value, y_policy, policy, model):
         value_error = (value - y_value) ** 2 # MSE loss
         policy_error = torch.sum((-policy* 
                                 (1e-8 + y_policy.float()).float().log()), 1) # cross entropy loss
-        total_error = (value_error.view(-1).float() + policy_error).mean()
+        
+        l2_lambda = 10e-4
+        l2_norm = sum(p.pow(2.0).sum() for p in model.parameters())
+        
+        total_error = value_error.view(-1).float() + policy_error + l2_lambda * l2_norm
+        
         return total_error
     
 if __name__ == "__main__":
     net = AlphaConnect()
-    test = torch.rand(1,6,7,3)
+    test = torch.rand(32,6,7,3)
     
     p,v = net(test)
     
