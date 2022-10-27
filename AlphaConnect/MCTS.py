@@ -118,5 +118,9 @@ class MCTS:
             node.value_sum += value if node.to_play == to_play else -value
             node.visit_count += 1
             
+    def get_best_action(self, board, model, to_play):
+        root = self.run(model, board, to_play)
+        return root.select_child()[0]
+            
             
                 

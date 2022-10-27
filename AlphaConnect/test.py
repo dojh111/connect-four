@@ -1,23 +1,37 @@
+from zmq import device
 from minimalConnectFour import Board
 from AlphaConnect import AlphaConnect
 import torch
-from MCTS import UCT_search, get_policy
+from MCTS import MCTS
 import numpy as np
 
 if __name__ == "__main__":
     board = Board()
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     
-    network = torch.load('./network.pt')
-    network = network.cuda()
+    args = {
+        'batch_size' : 64,
+        'num_simulations':100,
+        'numIters':10,
+        'numEps':10,
+        'epochs':25,
+        'checkpoint':'latest.pt',
+        'lr' : 0.001,
+    }
     
-    turn = 0    
+    network = AlphaConnect().to(device)
+    network.load_state_dict(torch.load('latest_v1.pt'))
+    network.eval()
+    mcts = MCTS(board, network, args, device)
+    
+    turn = 1    
     while not board.isDone():
-        board.print_board()
-        if turn == 0:
-            root = UCT_search(board, 100, network, 1)
-            policy = get_policy(root, 1)
-            board = board.play_action(np.random.choice(7, p=policy))
+        print(board)
+        if turn == 1:
+            action = mcts.get_best_action(board, network, 1)
+            board = board.play_action(action)
         else:
             move = int(input('Enter move: '))
             board = board.play_action(move)
-        turn = 1 - turn
+        turn = -1 * turn
+    print(board)
