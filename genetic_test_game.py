@@ -41,6 +41,7 @@ if __name__ == '__main__':
                 # connect_four.print_board()
                 # selection = get_player_selection()
                 # selection = random_agent.select_random_column(available_actions)      # Random agent
+                print("available_actions:",available_actions)
                 selection = agent.selectAction(game_state, available_actions)           # Trained Genetic Agent
                 # ----------- PLAY MOVE ----------- #
                 game_result = connect_four.play_turn(selection)
