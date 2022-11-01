@@ -5,6 +5,8 @@ import torch
 from MCTS import MCTS
 import numpy as np
 
+# Current best is latest_v1.pt
+
 if __name__ == "__main__":
     board = Board()
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -20,7 +22,7 @@ if __name__ == "__main__":
     }
     
     network = AlphaConnect().to(device)
-    network.load_state_dict(torch.load('latest_v1.pt'))
+    network.load_state_dict(torch.load('latest_v4.pt'))
     network.eval()
     mcts = MCTS(board, network, args, device)
     
