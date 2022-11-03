@@ -30,8 +30,14 @@ if __name__ == '__main__':
             # PLAYER 1 TURN (AI)
             if turn_number % 2 == 1:
                 print("available_actions:",available_actions)
-                selection,minimax_score = minimaxAgent.minimax(game_state,5, -math.inf, math.inf, True)
-                game_result = connect_four.play_turn(selection)
+                selection,minimax_score = minimaxAgent.minimax(board=game_state,depth=5, alpha=-math.inf, beta=math.inf, maximizingPlayer=True)
+                print("selection: ", selection)
+                # if selection==None:break
+                if minimaxAgent.is_valid_location(game_state, selection).any():
+                    # row = minimaxAgent.get_next_open_row(game_state, selection)
+
+                    print("ai plays:", selection)
+                    game_result = connect_four.play_turn(selection)
                 
             # PLAYER 2 TURN
             elif turn_number % 2 == 0:

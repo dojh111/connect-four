@@ -124,17 +124,22 @@ class MinimaxAgent:
         if maximizingPlayer:
             value = -math.inf
             column = random.choice(valid_locations)
+            print('valid_locations:',valid_locations, 'column:',column)
             for col in valid_locations:
                 row = self.get_next_open_row(board, col)
                 b_copy = board.copy()
                 self.drop_piece(b_copy, row, col, self.ai_number)
                 new_score = self.minimax(b_copy, depth-1, alpha, beta, False)[1]
+                
                 if new_score > value:
                     value = new_score
                     column = col
                 alpha = max(alpha, value)
+                
                 if alpha >= beta:
+                    print("alpha:",alpha, "beta:",beta)
                     break
+            print("column:",column,"value:", value, "alpha:",alpha, "beta:",beta)
             return column, value
 
         else: # Minimizing player
@@ -155,17 +160,19 @@ class MinimaxAgent:
 
     def get_valid_locations(self,board):
         valid_locations = []
+        
         for col in range(self.board_width):
+            
             if self.is_valid_location(board, col):
                 valid_locations.append(col)
         return valid_locations
 
     def is_valid_location(self, board, col):
-        return board[self.board_height-1][col] == 0
+        return board[0][col] == 0
 
     def get_next_open_row(self, board, col):
         for r in range(self.board_height):
-            if board[r][col] == 0:
+            if board[self.board_height-1-r][col] == 0:
                 return r
     def drop_piece(self, board, row, col, piece):
 	    board[row][col] = piece
