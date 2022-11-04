@@ -234,4 +234,5 @@ class MinimaxConnectFour:
             return value, best_column
 
 if __name__ == '__main__':
-    MinimaxConnectFour(2, 6)
+    MinimaxConnectFour(1, 8)
+    # Can play either as P1 or P2, 6-7 turn lookahead is possible. 8 is pushing it a bit

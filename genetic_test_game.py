@@ -23,13 +23,13 @@ if __name__ == '__main__':
     # feature_weights = [0.772, 0.315, 0.023, 0.681, 0.205, 0.764, 0.955, 0.153, 0.189, 0.058, 0.228, 0.426, 0.585]
     agent_number = 1    # Set for agent to be player 1 or player 2
     agent = GeneticAgent(agent_number, feature_weights)
+    random_agent = RandomAgent()
     count = 0
     max_games = 1000
     accumulated_outcomes = []
     to_continue = True
     while count < max_games and to_continue:
         connect_four = ConnectFour(agent_number)
-        random_agent = RandomAgent()
         game_result = 0
         while not connect_four.is_done:
             available_actions = connect_four.get_available_actions() # A value of -1 indicates a column that is not valid
@@ -54,6 +54,7 @@ if __name__ == '__main__':
                 # ----------- PLAY MOVE ----------- #
                 game_result = connect_four.play_turn(selection)
         print(f'[Game Finished] Result for Agent: {str(game_result)}')
+        connect_four.print_board()
         # if game_result == -1:
         #     to_continue = False
         count += 1
