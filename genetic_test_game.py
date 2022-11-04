@@ -22,6 +22,9 @@ if __name__ == '__main__':
     # feature_weights = [0.368, 0.936, 0.134, 0.24, 0.205, 0.181, 0.724, 0.58, 0.486, 0.09, 0.149, 0.344, 0.82]
     # feature_weights = [0.772, 0.315, 0.023, 0.681, 0.205, 0.764, 0.955, 0.153, 0.189, 0.058, 0.228, 0.426, 0.585]
     agent_number = 1    # Set for agent to be player 1 or player 2
+    opponent_number = 2
+    if agent_number == 2:
+        opponent_number = 1
     agent = GeneticAgent(agent_number, feature_weights)
     random_agent = RandomAgent()
     count = 0
@@ -30,31 +33,26 @@ if __name__ == '__main__':
     to_continue = True
     while count < max_games and to_continue:
         connect_four = ConnectFour(agent_number)
+        connect_four.print_board()
         game_result = 0
         while not connect_four.is_done:
             available_actions = connect_four.get_available_actions() # A value of -1 indicates a column that is not valid
-            turn_number = connect_four.get_turn_number()
+            turn = connect_four.player_turn
             game_state = connect_four.get_state()   # 2D numpy array: 1 = player 1 tokens, 2 = player 2 tokens
-            # PLAYER 1 TURN
-            if turn_number % 2 == 1:
-                # --------- MOVE SELECTION --------- #
-                # connect_four.print_board()
-                # selection = get_player_selection()
-                # selection = random_agent.select_random_column(available_actions)      # Random agent
+
+            if turn == agent_number:
                 selection = agent.selectAction(game_state, available_actions)           # Trained Genetic Agent
-                # ----------- PLAY MOVE ----------- #
+                print(f'[AI SELECTION] AI has selected column: {str(selection)}')
                 game_result = connect_four.play_turn(selection)
-            # PLAYER 2 TURN
-            elif turn_number % 2 == 0:
+            else:
                 # --------- MOVE SELECTION --------- #
-                connect_four.print_board()
-                selection = get_player_selection()
+                print(f'[PLAYER TURN] Token number - {str(opponent_number)}')
+                selection = get_player_selection()                                      # For human player
                 # selection = random_agent.select_random_column(available_actions)      # Random agent
-                # selection = agent.selectAction(game_state, available_actions)       # Trained Genetic Agent
                 # ----------- PLAY MOVE ----------- #
                 game_result = connect_four.play_turn(selection)
+            connect_four.print_board()
         print(f'[Game Finished] Result for Agent: {str(game_result)}')
-        connect_four.print_board()
         # if game_result == -1:
         #     to_continue = False
         count += 1
