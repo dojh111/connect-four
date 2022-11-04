@@ -34,11 +34,13 @@ class MinimaxConnectFour:
         print('[NEW GAME] Starting a new connect 4 game!')
         print(f'Player Number: {str(self.opponent_player_number)}, AI Number: {str(self.agent_player_number)}')
         print(f'[SETUP INFO] Minimax search depth - {str(self.search_depth)} levels')
+        print()
+        self.print_board()
         while not is_over:
             available_actions = self.get_available_actions(self.game_state)
             selected_column = 0
             if current_player_turn == self.agent_player_number:
-                value, selected_column = self.minimax(self.game_state, self.search_depth, True)
+                value, selected_column = self.minimax(self.game_state, self.search_depth, -math.inf, math.inf, True)
                 print(f'[AI Turn] - AI selected column number: {str(selected_column)}')
                 print(f'[AI Turn Value] {str(value)}') 
             else:
@@ -165,7 +167,7 @@ class MinimaxConnectFour:
         return (self.check_if_winning_move(board, self.agent_player_number), self.check_if_winning_move(board, self.opponent_player_number), is_draw)
 
     # Determines the minimax move
-    def minimax(self, board, depth, maximising_player):
+    def minimax(self, board, depth, alpha, beta, maximising_player):
         valid_actions = self.get_available_actions(board)
         # print(valid_actions)
         is_agent_win, is_opponent_win, is_draw = self.is_end_of_game(board, valid_actions)
@@ -200,13 +202,16 @@ class MinimaxConnectFour:
                     continue
                 board_copy = board.copy()
                 self.drop_piece(board_copy, open_row_index, column_number, self.agent_player_number)
-                new_score = self.minimax(board_copy, depth-1, False)[0]
+                new_score = self.minimax(board_copy, depth-1, alpha, beta, False)[0]
                 if new_score > value:
                     value = new_score
                     best_column = column_number
+                alpha = max(alpha, value)
+                if alpha >= beta:
+                    break
                 column_number += 1
             return value, best_column
-        else:
+        else: # Minimising player
             value = math.inf
             best_column = 0
             # For each position that is available in connect 4
@@ -218,12 +223,15 @@ class MinimaxConnectFour:
                     continue
                 board_copy = board.copy()
                 self.drop_piece(board_copy, open_row_index, column_number, self.opponent_player_number)
-                new_score = self.minimax(board_copy, depth-1, True)[0]
+                new_score = self.minimax(board_copy, depth-1, alpha, beta, True)[0]
                 if new_score < value:
                     value = new_score
                     best_column = column_number
+                beta = min(beta, value)
+                if alpha >= beta:
+                    break
                 column_number += 1
             return value, best_column
 
 if __name__ == '__main__':
-    MinimaxConnectFour(1, 4)
+    MinimaxConnectFour(2, 6)
